@@ -16,6 +16,7 @@ import com.phoenix.blog.core.service.UserService;
 import com.phoenix.blog.util.DataUtil;
 import com.phoenix.blog.util.PictureUtil;
 import com.phoenix.blog.util.SecurityUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,14 +25,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    UseMapper useMapper;
-    @Autowired
-    URLConfig urlConfig;
-    @Autowired
-    PictureConfig pictureConfig;
+
+    final UseMapper useMapper;
+
+    final URLConfig urlConfig;
+
+    final PictureConfig pictureConfig;
 
     @Override
     @Transactional

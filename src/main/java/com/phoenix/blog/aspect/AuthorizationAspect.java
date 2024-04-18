@@ -32,11 +32,10 @@ public class AuthorizationAspect {
             requireRoleLevel = authorizationRequired.value().getLevel();
         }
 
-        //未登录访客
+        //最低权限直接放行
         if (requireRoleLevel == 0){
             return;
         }
-
 
         String userRole = TokenContext.getUserRole();
         int userRoleLevel = Role.getLevel(userRole);

@@ -88,6 +88,7 @@ public class ArticleController {
     //更新文章内容
     public ResultVO updateArticleContent(@RequestBody ArticleDTO articleDTO){
         Article article;
+
         article = articleService.updateArticleContent(articleDTO);
         return ResultVO.success("Article save success",ArticleVO.buildVO(article,null));
     }

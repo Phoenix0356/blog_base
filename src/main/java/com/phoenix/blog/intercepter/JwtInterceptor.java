@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -21,6 +22,7 @@ import java.util.Objects;
 public class JwtInterceptor implements HandlerInterceptor {
 
     final JwtConfig jwtConfig;
+    final StringRedisTemplate stringRedisTemplate;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -28,8 +30,13 @@ public class JwtInterceptor implements HandlerInterceptor {
         if (!DataUtil.isEmptyData(token) && token.startsWith("Bearer ")){
             token = token.substring(7);
             try {
+
                 Claims claims = JwtUtil.isValidateToken(token,jwtConfig.secret);
                 TokenContext.setClaims(claims);
+
+                if (JwtUtil.isBlackListedToken(stringRedisTemplate,claims.getId())){
+                    throw new JwtValidatingException("jwt in blacklist");
+                }
             }catch (JwtException je){
                 throw new JwtValidatingException();
             }

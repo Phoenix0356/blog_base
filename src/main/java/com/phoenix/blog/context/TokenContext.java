@@ -3,6 +3,8 @@ package com.phoenix.blog.context;
 import com.phoenix.blog.constant.JwtConstant;
 import io.jsonwebtoken.Claims;
 
+import java.util.Date;
+
 //Todo
 //aop删除threadLocal
 public class TokenContext {
@@ -18,6 +20,14 @@ public class TokenContext {
 
     public static String getUserRole(){
         return (String) threadLocal.get().get(JwtConstant.ROLE);
+    }
+
+    public static Date getExpirationTime(){
+        return threadLocal.get().getExpiration();
+    }
+
+    public static String getJti(){
+        return threadLocal.get().getId();
     }
 
     public static void removeClaims(){

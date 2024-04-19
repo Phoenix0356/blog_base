@@ -17,17 +17,20 @@ import com.phoenix.blog.util.DataUtil;
 import com.phoenix.blog.util.PictureUtil;
 import com.phoenix.blog.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    final StringRedisTemplate stringRedisTemplate;
 
     final UseMapper useMapper;
 
@@ -99,5 +102,13 @@ public class UserServiceImpl implements UserService {
         }
 
         return user;
+    }
+
+    @Override
+    @Transactional
+    public void logout(String jwtId, Date jwtExpirationTime) {
+        Date now = new Date();
+        long expTime = Math.max(jwtExpirationTime.getTime()-now.getTime(),0);
+        stringRedisTemplate.opsForValue().set(jwtId,"",expTime, TimeUnit.MILLISECONDS);
     }
 }

@@ -60,8 +60,8 @@ public class UserServiceImpl implements UserService {
         String password = userRegisterDTO.getPassword();
         String avatarName = PictureUtil.saveOrUpdateFile(userRegisterDTO.getAvatarBase64(), null,pictureConfig.defaultAvatarPath,true);
         //Todo
-        String avatarURL = HttpConstant.HTTP_PREFIX+urlConfig.getBaseURL()+"/"
-                +pictureConfig.getDefaultAvatarPath()
+        String avatarURL = HttpConstant.HTTP_PREFIX+urlConfig.getBaseURL()
+                +pictureConfig.getDefaultAvatarURL()
                 +avatarName;
 
         if (useMapper.selectOne(new QueryWrapper<User>().eq("username",username))!=null){

@@ -15,7 +15,7 @@ public class PictureUtil {
 
             //Todo
             //String resourcesPath = new ClassPathResource(path).getFile().getAbsolutePath();
-            String resourcesPath = System.getProperty("user.dir")+"\\src\\main\\resources\\static\\"+path;
+            String resourcesPath = System.getProperty("user.dir")+path;
 
             // if user don't upload an image
             if (DataUtil.isEmptyData(pictureBase64)){
@@ -27,7 +27,7 @@ public class PictureUtil {
             else {
                 //create save path and decode the Base64
                 alterFileName = UUID.randomUUID().toString()+ ".jpg";
-                String newPath = resourcesPath + "\\" + alterFileName ;
+                String newPath = resourcesPath + alterFileName ;
                 byte[] pictureBytes = Base64.getDecoder().decode(pictureBase64);
                 //save the new image
                 Files.write(Paths.get(newPath), pictureBytes);

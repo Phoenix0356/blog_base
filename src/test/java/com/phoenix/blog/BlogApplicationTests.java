@@ -22,7 +22,7 @@ class BlogApplicationTests {
 
     @Test
     void testRedis(){
-        this.stringRedisTemplate.opsForValue().set("title", "spring 中文网", Duration.ofMinutes(5));
+
 
     }
 }

@@ -12,19 +12,18 @@ import com.phoenix.blog.util.JwtUtil;
 import com.phoenix.blog.model.vo.ResultVO;
 import com.phoenix.blog.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Delete;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
-@Slf4j
+@RequiredArgsConstructor
 public class UserController {
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    JwtConfig jwtConfig;
+    final UserService userService;
+    final JwtConfig jwtConfig;
 
     @GetMapping("/get")
     @AuthorizationRequired(Role.MEMBER)
@@ -57,10 +56,10 @@ public class UserController {
         return ResultVO.success("Login success",UserVO.BuildVO(user,token));
     }
 
-    @PostMapping("/logout")
+    @DeleteMapping("/logout")
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO logout(){
-        //Todo
-        return null;
+        userService.logout(TokenContext.getJti(),TokenContext.getExpirationTime());
+        return ResultVO.success("logout success");
     }
 }

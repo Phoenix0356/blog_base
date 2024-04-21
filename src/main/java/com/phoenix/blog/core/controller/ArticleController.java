@@ -11,6 +11,7 @@ import com.phoenix.blog.core.service.UserService;
 import com.phoenix.blog.util.DataUtil;
 import com.phoenix.blog.model.vo.ArticleVO;
 import com.phoenix.blog.model.vo.ResultVO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,13 +20,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/article")
+@RequiredArgsConstructor
 public class ArticleController {
-    @Autowired
-    private ArticleService articleService;
-
-    @Autowired
-    UserService userService;
-
+    final ArticleService articleService;
+    final UserService userService;
     @GetMapping("/get/{articleId}")
     @AuthorizationRequired(Role.VISITOR)
     public ResultVO getArticleById(@PathVariable String articleId){

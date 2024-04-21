@@ -16,22 +16,27 @@ import com.phoenix.blog.core.service.UserService;
 import com.phoenix.blog.util.DataUtil;
 import com.phoenix.blog.util.PictureUtil;
 import com.phoenix.blog.util.SecurityUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    UseMapper useMapper;
-    @Autowired
-    URLConfig urlConfig;
-    @Autowired
-    PictureConfig pictureConfig;
+    final StringRedisTemplate stringRedisTemplate;
+
+    final UseMapper useMapper;
+
+    final URLConfig urlConfig;
+
+    final PictureConfig pictureConfig;
 
     @Override
     @Transactional
@@ -55,8 +60,8 @@ public class UserServiceImpl implements UserService {
         String password = userRegisterDTO.getPassword();
         String avatarName = PictureUtil.saveOrUpdateFile(userRegisterDTO.getAvatarBase64(), null,pictureConfig.defaultAvatarPath,true);
         //Todo
-        String avatarURL = HttpConstant.HTTP_PREFIX+urlConfig.getBaseURL()+"/"
-                +pictureConfig.getDefaultAvatarPath()
+        String avatarURL = HttpConstant.HTTP_PREFIX+urlConfig.getBaseURL()
+                +pictureConfig.getDefaultAvatarURL()
                 +avatarName;
 
         if (useMapper.selectOne(new QueryWrapper<User>().eq("username",username))!=null){
@@ -97,5 +102,13 @@ public class UserServiceImpl implements UserService {
         }
 
         return user;
+    }
+
+    @Override
+    @Transactional
+    public void logout(String jwtId, Date jwtExpirationTime) {
+        Date now = new Date();
+        long expTime = Math.max(jwtExpirationTime.getTime()-now.getTime(),0);
+        stringRedisTemplate.opsForValue().set(jwtId,"",expTime, TimeUnit.MILLISECONDS);
     }
 }

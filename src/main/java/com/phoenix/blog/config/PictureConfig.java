@@ -10,4 +10,7 @@ import org.springframework.stereotype.Component;
 public class PictureConfig {
     @Value("${picture.defaultAvatarPath}")
     public String defaultAvatarPath;
+
+    @Value("${picture.defaultAvatarURL}")
+    public String defaultAvatarURL;
 }

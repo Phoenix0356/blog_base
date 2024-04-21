@@ -10,6 +10,7 @@ import com.phoenix.blog.exceptions.ArticleFormatException;
 import com.phoenix.blog.exceptions.ArticleNotFoundException;
 import com.phoenix.blog.exceptions.InvalidateArgumentException;
 import com.phoenix.blog.util.DataUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,9 +19,10 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ArticleServiceImpl implements ArticleService {
-    @Autowired
-    private ArticleMapper articleMapper;
+
+    final ArticleMapper articleMapper;
 
     @Override
     @Transactional

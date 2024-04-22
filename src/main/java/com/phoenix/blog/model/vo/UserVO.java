@@ -10,14 +10,15 @@ import lombok.Data;
 public class UserVO {
     String username;
     String token;
-    String avatarURL;
+    String userAvatarURL;
+    int roleLevel;
 
     public static UserVO BuildVO(User user, @Nullable String token) {
         return UserVO.builder()
                 .username(user.getUsername())
-                //Todo
-                .avatarURL(user.getUserAvatarURL())
+                .userAvatarURL(user.getUserAvatarURL())
                 .token(token)
+                .roleLevel(user.getUserRole().getLevel())
                 .build();
     }
 

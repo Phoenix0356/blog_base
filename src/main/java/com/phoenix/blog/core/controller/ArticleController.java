@@ -27,9 +27,8 @@ public class ArticleController {
     @GetMapping("/get/{articleId}")
     @AuthorizationRequired(Role.VISITOR)
     public ResultVO getArticleById(@PathVariable String articleId){
-        Article article = articleService.getArticleById(articleId);
-        User publisher = userService.getUser(article.getArticleUserId());
-        return ResultVO.success("Article load success", ArticleVO.buildVO(article,publisher));
+        ArticleVO articleVO = articleService.getArticleById(articleId);
+        return ResultVO.success("Article load success", articleVO);
     }
 
     @GetMapping("/get/all")
@@ -37,12 +36,7 @@ public class ArticleController {
     public ResultVO getArticleAll(){
         List<ArticleVO> articleVOList;
         try {
-            List<Article> articleList = articleService.getArticleAll();
-            articleVOList = new ArrayList<>();
-            for (Article article : articleList) {
-                User publisher = userService.getUser(article.getArticleUserId());
-                articleVOList.add(ArticleVO.buildVO(article, publisher));
-            }
+            articleVOList = articleService.getArticleAll();
         }finally {
             TokenContext.removeClaims();
         }
@@ -53,12 +47,7 @@ public class ArticleController {
     public ResultVO getUserArticleListById(){
         List<ArticleVO> articleVOList;
         try {
-            List<Article> articleList = articleService.getArticleUSerList(TokenContext.getUserId());
-            articleVOList = new ArrayList<>();
-            User user = userService.getUser(TokenContext.getUserId());
-            for (Article article : articleList) {
-                articleVOList.add(ArticleVO.buildVO(article, user));
-            }
+            articleVOList = articleService.getArticleUSerList(TokenContext.getUserId());
         }finally {
             TokenContext.removeClaims();
         }
@@ -69,15 +58,14 @@ public class ArticleController {
     @PostMapping("/save")
     @AuthorizationRequired(Role.PUBLISHER)
     public ResultVO saveArticle(@RequestBody ArticleDTO articleDTO){
-        Article article;
         try {
             articleDTO.setArticleUserId(TokenContext.getUserId());
-            article = articleService.SaveArticleByUser(articleDTO);
+            articleService.SaveArticleByUser(articleDTO);
         }finally {
             TokenContext.removeClaims();
         }
 
-        return ResultVO.success("Article save success",ArticleVO.buildVO(article,null));
+        return ResultVO.success("Article save success");
     }
 
 
@@ -85,21 +73,17 @@ public class ArticleController {
     @AuthorizationRequired(Role.PUBLISHER)
     //更新文章内容
     public ResultVO updateArticleContent(@RequestBody ArticleDTO articleDTO){
-        Article article;
-
-        article = articleService.updateArticleContent(articleDTO);
-        return ResultVO.success("Article save success",ArticleVO.buildVO(article,null));
+        articleService.updateArticleContent(articleDTO);
+        return ResultVO.success("Article save success");
     }
 
     @PutMapping("/update/statics")
     @AuthorizationRequired(Role.VISITOR)
     //更新阅读和点赞数
     public ResultVO updateArticleStatics(@RequestBody ArticleDTO articleDTO){
-        Article article;
-        article = articleService.updateArticleStatics(articleDTO);
-        return ResultVO.success("Article save success",ArticleVO.buildVO(article,null));
+        articleService.updateArticleStatics(articleDTO);
+        return ResultVO.success("Article save success");
     }
-    //Todo
 
     @PutMapping("/collect")
     @AuthorizationRequired(Role.MEMBER)

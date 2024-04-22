@@ -6,6 +6,8 @@ import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.Data;
 
+import java.sql.Timestamp;
+
 @Data
 @Builder
 public class ArticleVO {
@@ -18,7 +20,8 @@ public class ArticleVO {
     int articleBookmarkCount;
 
     String username;
-    String avatarURL;
+    String userAvatarURL;
+
 
     public static ArticleVO buildVO(Article article, @Nullable User user) {
         return ArticleVO.builder()
@@ -31,7 +34,7 @@ public class ArticleVO {
                 .articleBookmarkCount(article.getArticleBookmarkCount())
                 .username(user == null?null:user.getUsername())
                 //Todo
-                .avatarURL(user == null?null:user.getUserAvatarURL())
+                .userAvatarURL(user == null?null:user.getUserAvatarURL())
                 .build();
     }
 }

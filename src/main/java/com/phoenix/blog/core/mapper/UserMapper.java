@@ -5,5 +5,5 @@ import com.phoenix.blog.model.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface UseMapper extends BaseMapper<User> {
+public interface UserMapper extends BaseMapper<User> {
 }

@@ -9,9 +9,9 @@ import com.phoenix.blog.model.entity.Article;
 import com.phoenix.blog.exceptions.ArticleFormatException;
 import com.phoenix.blog.exceptions.ArticleNotFoundException;
 import com.phoenix.blog.exceptions.InvalidateArgumentException;
+import com.phoenix.blog.model.vo.ArticleVO;
 import com.phoenix.blog.util.DataUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,33 +26,32 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     @Transactional
-    public Article getArticleById(String articleId) {
+    public ArticleVO getArticleById(String articleId) {
         if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
-
-        Article article = articleMapper.selectById(articleId);
-
-        if (article == null){
+        System.out.println(articleId);
+        ArticleVO articleVO = articleMapper.selectArticleWithPublisher(articleId);
+        if (articleVO == null){
             throw new ArticleNotFoundException();
         }
 
-        return article;
+        return articleVO;
     }
 
     @Override
     @Transactional
-    public List<Article> getArticleAll() {
-        return articleMapper.selectList(null);
+    public List<ArticleVO> getArticleAll() {
+        return articleMapper.selectArticleWithPublisherList();
     }
 
     @Override
     @Transactional
-    public List<Article> getArticleUSerList(String userId) {
-        return articleMapper.selectList(new QueryWrapper<Article>().eq("article_user_id",userId));
+    public List<ArticleVO> getArticleUSerList(String userId) {
+        return articleMapper.selectUserArticleList(userId);
     }
 
     @Override
     @Transactional
-    public Article SaveArticleByUser(ArticleDTO articleDTO) {
+    public void SaveArticleByUser(ArticleDTO articleDTO) {
         Article article = new Article();
 
         DataUtil.setFields(article,articleDTO,() ->
@@ -70,12 +69,12 @@ public class ArticleServiceImpl implements ArticleService {
         }
 
         articleMapper.insert(article);
-        return article;
+
     }
 
     @Override
     @Transactional
-    public Article updateArticleContent(ArticleDTO articleDTO) {
+    public void updateArticleContent(ArticleDTO articleDTO) {
         String articleId = articleDTO.getArticleId();
 
         if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
@@ -91,12 +90,12 @@ public class ArticleServiceImpl implements ArticleService {
 
         articleMapper.update(article,new UpdateWrapper<Article>().eq("article_id",articleId));
 
-        return article;
+
     }
 
     @Override
     @Transactional
-    public Article updateArticleStatics(ArticleDTO articleDTO) {
+    public void updateArticleStatics(ArticleDTO articleDTO) {
         String articleId = articleDTO.getArticleId();
 
         if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
@@ -106,11 +105,10 @@ public class ArticleServiceImpl implements ArticleService {
 
         DataUtil.setFields(article, articleDTO, () ->
                article.setArticleReadCount(articleDTO.getArticleReadCount())
-                    .setArticleUpvoteCount(articleDTO.getArticleUpvoteCount()));
-
+                       .setArticleUpvoteCount(articleDTO.getArticleUpvoteCount())
+                       .setArticleBookmarkCount(articleDTO.getArticleBookmarkCount())
+        );
         articleMapper.update(article,new UpdateWrapper<Article>().eq("article_id",articleId));
-
-        return article;
     }
 
     @Override
@@ -122,6 +120,5 @@ public class ArticleServiceImpl implements ArticleService {
         if (article == null) throw new ArticleNotFoundException();
 
         articleMapper.delete(new QueryWrapper<Article>().eq("article_id",articleId));
-
     }
 }

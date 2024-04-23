@@ -1,19 +1,24 @@
 package com.phoenix.blog.core.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.phoenix.blog.config.JwtConfig;
 import com.phoenix.blog.config.PictureConfig;
 import com.phoenix.blog.config.URLConfig;
 import com.phoenix.blog.constant.HttpConstant;
+import com.phoenix.blog.exceptions.PasswordErrorException;
+import com.phoenix.blog.model.dto.UserDTO;
 import com.phoenix.blog.model.dto.UserLoginDTO;
 import com.phoenix.blog.model.dto.UserRegisterDTO;
 import com.phoenix.blog.model.entity.User;
 import com.phoenix.blog.exceptions.InvalidateArgumentException;
-import com.phoenix.blog.exceptions.PasswordErrorException;
 import com.phoenix.blog.exceptions.UserNotFoundException;
 import com.phoenix.blog.exceptions.UsernameExistException;
-import com.phoenix.blog.core.mapper.UseMapper;
+import com.phoenix.blog.core.mapper.UserMapper;
 import com.phoenix.blog.core.service.UserService;
+import com.phoenix.blog.model.vo.UserVO;
 import com.phoenix.blog.util.DataUtil;
+import com.phoenix.blog.util.JwtUtil;
 import com.phoenix.blog.util.PictureUtil;
 import com.phoenix.blog.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
@@ -32,28 +37,52 @@ public class UserServiceImpl implements UserService {
 
     final StringRedisTemplate stringRedisTemplate;
 
-    final UseMapper useMapper;
+    final UserMapper userMapper;
 
     final URLConfig urlConfig;
 
     final PictureConfig pictureConfig;
+    final JwtConfig jwtConfig;
 
     @Override
     @Transactional
-    public User getUser(String userId) {
+    public UserVO getUser(String userId) {
         if (DataUtil.isEmptyData(userId)) throw new InvalidateArgumentException();
-        User user = useMapper.selectOne(new QueryWrapper<User>().eq("user_id",userId));
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("user_id",userId));
 
         if (user == null) {
             throw new UserNotFoundException();
         }
+        return UserVO.BuildVO(user,null);
+    }
 
-        return user;
+    @Override
+    public UserVO updateUser(UserDTO userDTO,String userId) {
+        if (DataUtil.isEmptyData(userId)) throw new InvalidateArgumentException();
+
+        User user = userMapper.selectById(userId);
+
+        if (user == null) throw new UserNotFoundException();
+
+        DataUtil.setFields(user,userDTO,()->{
+            user.setUsername(userDTO.getUsername());
+        });
+
+        try {
+            userMapper.update(new UpdateWrapper<User>().eq("user_id",userId)
+                    .set("username",userDTO.getUsername()
+                    ));
+        }catch (Exception e){
+            throw new InvalidateArgumentException();
+        }
+
+
+        return UserVO.BuildVO(user,null);
     }
 
     @Override
     @Transactional
-    public User register(UserRegisterDTO userRegisterDTO) {
+    public UserVO register(UserRegisterDTO userRegisterDTO) {
 
         BCryptPasswordEncoder passwordEncoder = SecurityUtil.getPasswordEncoder();
         String username = userRegisterDTO.getUsername();
@@ -64,7 +93,7 @@ public class UserServiceImpl implements UserService {
                 +pictureConfig.getDefaultAvatarURL()
                 +avatarName;
 
-        if (useMapper.selectOne(new QueryWrapper<User>().eq("username",username))!=null){
+        if (userMapper.selectOne(new QueryWrapper<User>().eq("username",username))!=null){
             throw new UsernameExistException();
         }
 
@@ -77,21 +106,24 @@ public class UserServiceImpl implements UserService {
                 .setRegisterTime(new Timestamp(System.currentTimeMillis())));
 
 
-        useMapper.insert(user);
+        userMapper.insert(user);
 
-        return user;
+        String token = JwtUtil.getJwt(user.getUserId(), user.getUserRole().name(),
+                jwtConfig.secret, jwtConfig.expiration);
+
+        return UserVO.BuildVO(user,token);
     }
 
     @Override
     @Transactional
-    public User login(UserLoginDTO userLoginDTO) {
+    public UserVO login(UserLoginDTO userLoginDTO) {
 
         BCryptPasswordEncoder passwordEncoder = SecurityUtil.getPasswordEncoder();
 
         String username = userLoginDTO.getUsername();
         String password = userLoginDTO.getPassword();
 
-        User user = useMapper.selectOne(new QueryWrapper<User>().eq("username",username));
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("username",username));
 
         if (user == null){
             throw new UserNotFoundException();
@@ -101,7 +133,10 @@ public class UserServiceImpl implements UserService {
             throw new PasswordErrorException();
         }
 
-        return user;
+        String token = JwtUtil.getJwt(user.getUserId(), user.getUserRole().name(),
+                jwtConfig.secret, jwtConfig.expiration);
+
+        return UserVO.BuildVO(user,token);
     }
 
     @Override

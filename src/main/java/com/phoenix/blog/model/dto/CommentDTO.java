@@ -6,7 +6,6 @@ import lombok.Data;
 import java.sql.Timestamp;
 
 @Data
-@Builder
 public class CommentDTO {
     String commentId;
     String commentContent;

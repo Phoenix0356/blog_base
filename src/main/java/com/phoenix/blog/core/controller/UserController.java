@@ -4,6 +4,7 @@ import com.phoenix.blog.annotations.AuthorizationRequired;
 import com.phoenix.blog.context.TokenContext;
 import com.phoenix.blog.core.service.UserService;
 import com.phoenix.blog.enumeration.Role;
+import com.phoenix.blog.model.dto.UserDTO;
 import com.phoenix.blog.model.dto.UserLoginDTO;
 import com.phoenix.blog.model.dto.UserRegisterDTO;
 import com.phoenix.blog.model.vo.ResultVO;
@@ -26,6 +27,13 @@ public class UserController {
             TokenContext.removeClaims();
         }
         return ResultVO.success("Get user info success",userVO);
+    }
+
+    @PutMapping("/update")
+    @AuthorizationRequired(Role.MEMBER)
+    public ResultVO updateUser(@RequestBody UserDTO userDTO){
+        UserVO userVO = userService.updateUser(userDTO,TokenContext.getUserId());
+        return ResultVO.success("update user info success",userVO);
     }
     @PostMapping("/register")
     @AuthorizationRequired(Role.VISITOR)

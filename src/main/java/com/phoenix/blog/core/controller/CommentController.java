@@ -21,19 +21,21 @@ public class CommentController {
     private final CommentService commentService;
 
     @GetMapping("/get")
+    @AuthorizationRequired(Role.VISITOR)
     public ResultVO getCommentById(@RequestParam String commentId){
         CommentVO commentVO = commentService.getCommentById(commentId);
         return ResultVO.success("Comment load success", commentVO);
     }
 
-    @GetMapping("/all")
-    @AuthorizationRequired(Role.MEMBER)
+    @GetMapping("/get/all")
+    @AuthorizationRequired(Role.VISITOR)
     public ResultVO getArticleCommentAll(@RequestParam String articleId) throws InterruptedException {
         List<CommentVO> commentVOList = commentService.getCommentArticleList(articleId);
         return ResultVO.success("Comments load success",commentVOList);
     }
 
     @PostMapping("/save")
+    @AuthorizationRequired(Role.MEMBER)
     public ResultVO  saveCommentById(@RequestBody CommentDTO commentDTO) throws InterruptedException {
         commentDTO.setCommentUserId(TokenContext.getUserId());
         CommentVO commentVO = commentService.saveComment(commentDTO);
@@ -41,12 +43,14 @@ public class CommentController {
     }
 
     @PutMapping("/update")
+    @AuthorizationRequired(Role.MEMBER)
     public ResultVO updateCommentById(@RequestBody CommentDTO commentDTO){
         CommentVO commentVO = commentService.updateComment(commentDTO);
         return ResultVO.success("Comment update success",commentVO);
     }
 
     @DeleteMapping("/delete/{commentId}")
+    @AuthorizationRequired(Role.MEMBER)
     public ResultVO deleteComment(@PathVariable String commentId){
         commentService.deleteComment(commentId);
         return ResultVO.success("comment delete success",null);

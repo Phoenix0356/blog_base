@@ -88,7 +88,7 @@ public class ArticleServiceImpl implements ArticleService {
                 .setArticleReviseTime(new Timestamp(System.currentTimeMillis())));
 
 
-        articleMapper.update(article,new UpdateWrapper<Article>().eq("article_id",articleId));
+        articleMapper.updateById(article);
 
 
     }
@@ -108,7 +108,7 @@ public class ArticleServiceImpl implements ArticleService {
                        .setArticleUpvoteCount(articleDTO.getArticleUpvoteCount())
                        .setArticleBookmarkCount(articleDTO.getArticleBookmarkCount())
         );
-        articleMapper.update(article,new UpdateWrapper<Article>().eq("article_id",articleId));
+        articleMapper.updateById(article);
     }
 
     @Override

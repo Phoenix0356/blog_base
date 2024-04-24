@@ -69,9 +69,7 @@ public class UserServiceImpl implements UserService {
         });
 
         try {
-            userMapper.update(new UpdateWrapper<User>().eq("user_id",userId)
-                    .set("username",userDTO.getUsername()
-                    ));
+            userMapper.updateById(user);
         }catch (Exception e){
             throw new InvalidateArgumentException();
         }
@@ -83,7 +81,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserVO register(UserRegisterDTO userRegisterDTO) {
-
         BCryptPasswordEncoder passwordEncoder = SecurityUtil.getPasswordEncoder();
         String username = userRegisterDTO.getUsername();
         String password = userRegisterDTO.getPassword();

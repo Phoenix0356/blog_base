@@ -9,7 +9,7 @@ public enum Role {
     //已登录游客
     MEMBER("MEMBER",1),
     //文章发布者
-    PUBLISHER("PUBLISHER",2),
+    WRITER("WRITER",2),
     //管理员
     ADMIN("ADMIN",3);
 

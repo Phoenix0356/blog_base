@@ -5,17 +5,12 @@ import com.phoenix.blog.context.TokenContext;
 import com.phoenix.blog.core.service.ArticleService;
 import com.phoenix.blog.enumeration.Role;
 import com.phoenix.blog.model.dto.ArticleDTO;
-import com.phoenix.blog.model.entity.Article;
-import com.phoenix.blog.model.entity.User;
 import com.phoenix.blog.core.service.UserService;
-import com.phoenix.blog.util.DataUtil;
 import com.phoenix.blog.model.vo.ArticleVO;
 import com.phoenix.blog.model.vo.ResultVO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -43,7 +38,7 @@ public class ArticleController {
         return ResultVO.success("Articles load success",articleVOList);
     }
     @GetMapping("/list")
-    @AuthorizationRequired(Role.PUBLISHER)
+    @AuthorizationRequired(Role.WRITER)
     public ResultVO getUserArticleListById(){
         List<ArticleVO> articleVOList;
         try {
@@ -56,7 +51,7 @@ public class ArticleController {
     }
 
     @PostMapping("/save")
-    @AuthorizationRequired(Role.PUBLISHER)
+    @AuthorizationRequired(Role.WRITER)
     public ResultVO saveArticle(@RequestBody ArticleDTO articleDTO){
         try {
             articleDTO.setArticleUserId(TokenContext.getUserId());
@@ -70,7 +65,7 @@ public class ArticleController {
 
 
     @PutMapping("/update/content")
-    @AuthorizationRequired(Role.PUBLISHER)
+    @AuthorizationRequired(Role.WRITER)
     //更新文章内容
     public ResultVO updateArticleContent(@RequestBody ArticleDTO articleDTO){
         articleService.updateArticleContent(articleDTO);
@@ -93,7 +88,7 @@ public class ArticleController {
 
 
     @DeleteMapping("/delete/{articleId}")
-    @AuthorizationRequired(Role.PUBLISHER)
+    @AuthorizationRequired(Role.WRITER)
     public ResultVO deleteArticle(@PathVariable String articleId){
         articleService.deleteArticleById(articleId);
         return ResultVO.success("Article delete success",null);

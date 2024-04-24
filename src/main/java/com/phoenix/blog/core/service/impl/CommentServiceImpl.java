@@ -1,25 +1,30 @@
 package com.phoenix.blog.core.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.phoenix.blog.core.mapper.CommentMapper;
 import com.phoenix.blog.core.service.CommentService;
-import com.phoenix.blog.model.dto.CommentDTO;
-import com.phoenix.blog.model.entity.Comment;
 import com.phoenix.blog.exceptions.CommentFormatException;
 import com.phoenix.blog.exceptions.CommentNotFoundException;
 import com.phoenix.blog.exceptions.InvalidateArgumentException;
+import com.phoenix.blog.model.dto.CommentDTO;
+import com.phoenix.blog.model.entity.Comment;
+import com.phoenix.blog.model.vo.CommentVO;
 import com.phoenix.blog.util.DataUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.sql.Timestamp;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
-    @Autowired
-    private CommentMapper commentMapper;
+
+    private final CommentMapper commentMapper;
 
     @Override
-    public Comment getCommentById(String commentId) {
+    public CommentVO getCommentById(String commentId) {
         if (DataUtil.isEmptyData(commentId)){
             throw  new InvalidateArgumentException();
         }
@@ -30,33 +35,52 @@ public class CommentServiceImpl implements CommentService {
             throw new CommentNotFoundException();
         }
 
-        return comment;
+        return CommentVO.buildVO(comment);
     }
 
     @Override
-    public Comment saveComment(CommentDTO commentDTO, String userId) {
+    @Transactional
+    public synchronized List<CommentVO> getCommentArticleList(String articleId) throws InterruptedException {
+        if (DataUtil.isEmptyData(articleId)){
+            throw new InvalidateArgumentException();
+        }
+        return commentMapper.selectCommentWithPublisherList(articleId);
+    }
+
+    @Override
+    @Transactional
+    public synchronized CommentVO saveComment(CommentDTO commentDTO) throws InterruptedException {
         if (commentDTO.getCommentContent() == null){
             throw new CommentFormatException();
         }
         Comment comment = new Comment();
-        comment.set(commentDTO,userId);
+        DataUtil.setFields(comment,commentDTO,()->
+                comment.setCommentContent(commentDTO.getCommentContent())
+                        .setCommentArticleId(commentDTO.getCommentArticleId())
+                        .setCommentUserId(commentDTO.getCommentUserId())
+                        .setCommentReviseTime(new Timestamp(System.currentTimeMillis()))
+        );
         commentMapper.insert(comment);
-        return comment;
+        return CommentVO.buildVO(comment);
     }
 
     @Override
-    public Comment updateComment(CommentDTO commentDTO) {
+    @Transactional
+    public CommentVO updateComment(CommentDTO commentDTO) {
         String commentId = commentDTO.getCommentId();
         if (DataUtil.isEmptyData(commentId)) throw new InvalidateArgumentException();
 
         Comment comment = commentMapper.selectById(commentId);
 
         if (comment == null) throw new CommentNotFoundException();
-        comment.update(commentDTO);
 
-        commentMapper.update(comment,new UpdateWrapper<Comment>().eq("comment_id",commentId));
+        DataUtil.setFields(comment,commentDTO,()->
+                comment.setCommentContent(commentDTO.getCommentContent())
+        );
 
-        return comment;
+        commentMapper.updateById(comment);
+
+        return CommentVO.buildVO(comment);
     }
 
     @Override

@@ -11,15 +11,21 @@ import java.sql.Timestamp;
 public class CommentVO {
     String commentId;
     String commentContent;
-    Timestamp commentPublishTime;
+
     int commentUpvoteCount;
+    String commentReviseTime;
+
+    String username;
+    String userAvatarURL;
+
+
 
     public static CommentVO buildVO(Comment comment){
         return CommentVO.builder()
                 .commentId(comment.getCommentId())
                 .commentContent(comment.getCommentContent())
                 .commentUpvoteCount(comment.getCommentUpvoteCount())
-                .commentPublishTime(comment.getCommentReviseTime())
+                .commentReviseTime(comment.getCommentReviseTime().toString())
                 .build();
     }
 }

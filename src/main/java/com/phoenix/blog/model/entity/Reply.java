@@ -35,8 +35,8 @@ public class Reply {
     @TableField("reply_receiver_name")
     private String replyReceiverName;
 
-    @TableField("reply_publish_time")
-    private String replyPublishTime;
+    @TableField("reply_revise_time")
+    private Timestamp replyReviseTime;
 
 
 }

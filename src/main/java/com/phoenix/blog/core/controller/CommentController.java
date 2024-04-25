@@ -20,9 +20,9 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @GetMapping("/get")
+    @GetMapping("/get/{commentId}")
     @AuthorizationRequired(Role.VISITOR)
-    public ResultVO getCommentById(@RequestParam String commentId){
+    public ResultVO getCommentById(@PathVariable String commentId){
         CommentVO commentVO = commentService.getCommentById(commentId);
         return ResultVO.success("Comment load success", commentVO);
     }

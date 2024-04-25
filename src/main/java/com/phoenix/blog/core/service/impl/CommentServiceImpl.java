@@ -19,28 +19,29 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class CommentServiceImpl implements CommentService {
+public class CommentServiceImpl implements CommentService{
 
     private final CommentMapper commentMapper;
 
     @Override
+    @Transactional
     public CommentVO getCommentById(String commentId) {
         if (DataUtil.isEmptyData(commentId)){
             throw  new InvalidateArgumentException();
         }
 
-        Comment comment = commentMapper.selectById(commentId);
+        CommentVO commentVO= commentMapper.selectCommentWithPublisher(commentId);
 
-        if (comment == null){
+        if (commentVO == null){
             throw new CommentNotFoundException();
         }
 
-        return CommentVO.buildVO(comment);
+        return commentVO;
     }
 
     @Override
     @Transactional
-    public synchronized List<CommentVO> getCommentArticleList(String articleId) throws InterruptedException {
+    public List<CommentVO> getCommentArticleList(String articleId){
         if (DataUtil.isEmptyData(articleId)){
             throw new InvalidateArgumentException();
         }
@@ -49,7 +50,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public synchronized CommentVO saveComment(CommentDTO commentDTO) throws InterruptedException {
+    public CommentVO saveComment(CommentDTO commentDTO){
         if (commentDTO.getCommentContent() == null){
             throw new CommentFormatException();
         }
@@ -76,21 +77,21 @@ public class CommentServiceImpl implements CommentService {
 
         DataUtil.setFields(comment,commentDTO,()->
                 comment.setCommentContent(commentDTO.getCommentContent())
+                        .setCommentReviseTime(new Timestamp(System.currentTimeMillis()))
         );
 
         commentMapper.updateById(comment);
-
         return CommentVO.buildVO(comment);
     }
 
     @Override
+    @Transactional
     public void deleteComment(String commentId) {
         if (DataUtil.isEmptyData(commentId)) throw new InvalidateArgumentException();
 
         Comment comment = commentMapper.selectById(commentId);
         if (comment == null) throw new CommentNotFoundException();
 
-        commentMapper.delete(new QueryWrapper<Comment>().eq("comment_id",commentId));
-
+        commentMapper.deleteById(commentId);
     }
 }

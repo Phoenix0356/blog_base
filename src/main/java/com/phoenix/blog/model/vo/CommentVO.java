@@ -11,7 +11,6 @@ import java.sql.Timestamp;
 public class CommentVO {
     String commentId;
     String commentContent;
-
     int commentUpvoteCount;
     String commentReviseTime;
 

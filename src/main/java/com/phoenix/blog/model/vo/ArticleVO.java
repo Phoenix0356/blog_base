@@ -23,7 +23,7 @@ public class ArticleVO {
     String userAvatarURL;
 
 
-    public static ArticleVO buildVO(Article article, @Nullable User user) {
+    public static ArticleVO buildVO(Article article) {
         return ArticleVO.builder()
                 .articleId(article.getArticleId())
                 .articleTitle(article.getArticleTitle())
@@ -32,9 +32,6 @@ public class ArticleVO {
                 .articleReadCount(article.getArticleReadCount())
                 .articleUpvoteCount(article.getArticleUpvoteCount())
                 .articleBookmarkCount(article.getArticleBookmarkCount())
-                .username(user == null?null:user.getUsername())
-                //Todo
-                .userAvatarURL(user == null?null:user.getUserAvatarURL())
                 .build();
     }
 }

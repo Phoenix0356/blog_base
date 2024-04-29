@@ -2,6 +2,7 @@ package com.phoenix.blog.model.dto;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 @Data
 public class ArticleDTO {

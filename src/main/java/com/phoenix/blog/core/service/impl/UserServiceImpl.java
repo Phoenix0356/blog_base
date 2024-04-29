@@ -6,7 +6,9 @@ import com.phoenix.blog.config.JwtConfig;
 import com.phoenix.blog.config.PictureConfig;
 import com.phoenix.blog.config.URLConfig;
 import com.phoenix.blog.constant.HttpConstant;
+import com.phoenix.blog.core.service.CollectionService;
 import com.phoenix.blog.exceptions.PasswordErrorException;
+import com.phoenix.blog.model.dto.CollectionDTO;
 import com.phoenix.blog.model.dto.UserDTO;
 import com.phoenix.blog.model.dto.UserLoginDTO;
 import com.phoenix.blog.model.dto.UserRegisterDTO;
@@ -34,6 +36,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
+    final CollectionService collectionService;
 
     final StringRedisTemplate stringRedisTemplate;
 
@@ -102,6 +106,9 @@ public class UserServiceImpl implements UserService {
                 .setUserAvatarURL(avatarURL)
                 .setRegisterTime(new Timestamp(System.currentTimeMillis())));
 
+        //创建默认收藏夹
+
+        collectionService.saveCollection(new CollectionDTO().setCollectionUsername(username));
 
         userMapper.insert(user);
 

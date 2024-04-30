@@ -8,4 +8,5 @@ import lombok.experimental.Accessors;
 public class CollectionDTO {
     String collectionUsername;
     String collectionName;
+    String collectionDescription;
 }

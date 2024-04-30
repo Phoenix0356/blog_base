@@ -9,7 +9,7 @@
             INNER JOIN user u ON a.article_user_id = u.user_id
             INNER JOIN collection_article_list cal on cal.article_id = a.article_id
             INNER JOIN collection c on c.collection_id = cal.collection_id
-        where c.collection_username = #{username}
+        where c.collection_username = #{username} and c.collection_name = #{collectionName}
     </select>
 
     <insert id="insertArticleIntoCollection" parameterType="map">

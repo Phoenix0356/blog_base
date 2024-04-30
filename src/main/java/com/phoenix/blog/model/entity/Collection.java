@@ -30,4 +30,7 @@ public class Collection {
 
     @TableField(value = "collection_revise_time")
     public Timestamp collectionReviseTime;
+
+    @TableField(value = "collection_description")
+    public String collectionDescription;
 }

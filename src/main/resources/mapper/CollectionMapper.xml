@@ -12,6 +12,12 @@
         where c.collection_username = #{username} and c.collection_name = #{collectionName}
     </select>
 
+    <select id="isArticleExistsInCollection" parameterType="string"
+            resultType="int">
+        SELECT EXISTS(SELECT 1 FROM collection_article_list
+                               WHERE collection_id = #{collectionId} AND article_id = #{articleId})
+    </select>
+
     <insert id="insertArticleIntoCollection" parameterType="map">
         INSERT INTO collection_article_list(collection_article_list_id, collection_id, article_id)
         VALUES(#{collectionArticleListId}, #{collectionId}, #{articleId})
@@ -22,4 +28,6 @@
         DELETE from collection_article_list
         WHERE article_id = #{articleId}
     </delete>
+
+
 </mapper>

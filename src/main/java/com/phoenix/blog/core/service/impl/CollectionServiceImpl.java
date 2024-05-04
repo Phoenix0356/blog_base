@@ -3,6 +3,7 @@ package com.phoenix.blog.core.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.phoenix.blog.core.mapper.CollectionMapper;
 import com.phoenix.blog.core.service.CollectionService;
+import com.phoenix.blog.exceptions.CollectionContainsException;
 import com.phoenix.blog.exceptions.CollectionExistException;
 import com.phoenix.blog.exceptions.CommentNotFoundException;
 import com.phoenix.blog.model.dto.CollectionAddDTO;
@@ -55,7 +56,7 @@ public class CollectionServiceImpl implements CollectionService {
         queryMap.put("collection_username",username);
         queryMap.put("collection_name",collectionName);
 
-        if (collectionMapper.selectByMap(queryMap)!=null){
+        if (!collectionMapper.selectByMap(queryMap).isEmpty()){
             throw new CollectionExistException();
         }
         DataUtil.setFields(collection,collectionDTO,() ->
@@ -69,12 +70,22 @@ public class CollectionServiceImpl implements CollectionService {
 
     @Override
     public void saveArticleIntoCollection(CollectionAddDTO collectionAddDTO) {
-        Collection collection = collectionMapper.selectOne(new QueryWrapper<Collection>()
-                .eq("collection_username",collectionAddDTO.getUsername()));
-        Map<String,String> map = new HashMap<>();
 
-        map.put("collectionId", collection.getCollectionId());
-        map.put("articleId", collectionAddDTO.getArticleId());
+        Collection collection = collectionMapper.selectOne(new QueryWrapper<Collection>()
+                .eq("collection_username",collectionAddDTO.getUsername())
+                .eq("collection_name",collectionAddDTO.getCollectionName())
+        );
+
+        String collectionId = collection.getCollectionId();
+        String articleId = collectionAddDTO.getArticleId();
+
+        if (collectionMapper.isArticleExistsInCollection(collectionId,articleId) == 1){
+            throw new CollectionContainsException();
+        }
+
+        Map<String,String> map = new HashMap<>();
+        map.put("collectionId",collectionId );
+        map.put("articleId", articleId);
         map.put("collectionArticleListId", UUID.randomUUID().toString());
         collectionMapper.insertArticleIntoCollection(map);
     }

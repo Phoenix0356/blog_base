@@ -80,13 +80,6 @@ public class ArticleController {
         return ResultVO.success("Article save success");
     }
 
-    @PutMapping("/collect")
-    @AuthorizationRequired(Role.MEMBER)
-    public ResultVO collectArticleById(@RequestParam String articleId){
-        return null;
-    }
-
-
     @DeleteMapping("/delete/{articleId}")
     @AuthorizationRequired(Role.WRITER)
     public ResultVO deleteArticle(@PathVariable String articleId){

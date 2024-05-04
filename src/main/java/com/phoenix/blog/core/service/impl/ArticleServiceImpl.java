@@ -28,7 +28,6 @@ public class ArticleServiceImpl implements ArticleService {
     @Transactional
     public ArticleVO getArticleById(String articleId) {
         if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
-        System.out.println(articleId);
         ArticleVO articleVO = articleMapper.selectArticleWithPublisher(articleId);
         if (articleVO == null){
             throw new ArticleNotFoundException();
@@ -88,7 +87,7 @@ public class ArticleServiceImpl implements ArticleService {
                 .setArticleReviseTime(new Timestamp(System.currentTimeMillis())));
 
 
-        articleMapper.update(article,new UpdateWrapper<Article>().eq("article_id",articleId));
+        articleMapper.updateById(article);
 
 
     }
@@ -108,7 +107,7 @@ public class ArticleServiceImpl implements ArticleService {
                        .setArticleUpvoteCount(articleDTO.getArticleUpvoteCount())
                        .setArticleBookmarkCount(articleDTO.getArticleBookmarkCount())
         );
-        articleMapper.update(article,new UpdateWrapper<Article>().eq("article_id",articleId));
+        articleMapper.updateById(article);
     }
 
     @Override

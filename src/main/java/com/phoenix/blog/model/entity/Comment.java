@@ -30,7 +30,7 @@ public class Comment {
     @TableField("comment_upvote_count")
     private int commentUpvoteCount;
 
-    @TableField("comment_publish_time")
+    @TableField("comment_revise_time")
     private Timestamp commentReviseTime;
 
     @TableField("comment_user_id")
@@ -38,18 +38,5 @@ public class Comment {
 
     @TableField("comment_article_id")
     private String commentArticleId;
-
-    public void set(CommentDTO dto,String userId){
-        this.setCommentContent(dto.getCommentContent())
-                .setCommentReviseTime(new Timestamp(System.currentTimeMillis()))
-                .setCommentUserId(userId);
-    }
-
-    public void update(CommentDTO dto){
-        this.setCommentContent(dto.getCommentContent())
-                .setCommentReviseTime(new Timestamp(System.currentTimeMillis()))
-                .setCommentUpvoteCount(dto.getCommentUpvoteCount());
-    }
-
 
 }

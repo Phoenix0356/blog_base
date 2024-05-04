@@ -16,27 +16,21 @@ import java.sql.Timestamp;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("reply")
+@TableName("collection")
 @Accessors(chain = true)
-public class Reply {
+public class Collection {
+    @TableId(value = "collection_id",type = IdType.ASSIGN_UUID)
+    public String collectionId;
 
-    @TableId(value = "reply_id", type = IdType.ASSIGN_UUID)
-    private String replyId;
+    @TableField(value = "collection_username")
+    public String Username;
 
-    @TableField("comment_id")
-    private String commentId;
+    @TableField(value = "collection_name")
+    public String collectionName;
 
-    @TableField("reply_content")
-    private String replyContent;
+    @TableField(value = "collection_revise_time")
+    public Timestamp collectionReviseTime;
 
-    @TableField("reply_user_name")
-    private String replyUserName;
-
-    @TableField("reply_receiver_name")
-    private String replyReceiverName;
-
-    @TableField("reply_revise_time")
-    private Timestamp replyReviseTime;
-
-
+    @TableField(value = "collection_description")
+    public String collectionDescription;
 }

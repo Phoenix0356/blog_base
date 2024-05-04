@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.phoenix.blog.core.mapper.CollectionMapper">
+    <select id="selectCollectionArticleList" parameterType="string"
+            resultType="com.phoenix.blog.model.vo.ArticleVO">
+        SELECT a.* , u.username , u.user_avatar_url
+        from article a
+            INNER JOIN user u ON a.article_user_id = u.user_id
+            INNER JOIN collection_article_list cal on cal.article_id = a.article_id
+            INNER JOIN collection c on c.collection_id = cal.collection_id
+        where c.collection_username = #{username} and c.collection_name = #{collectionName}
+    </select>
+
+    <select id="isArticleExistsInCollection" parameterType="string"
+            resultType="int">
+        SELECT EXISTS(SELECT 1 FROM collection_article_list
+                               WHERE collection_id = #{collectionId} AND article_id = #{articleId})
+    </select>
+
+    <insert id="insertArticleIntoCollection" parameterType="map">
+        INSERT INTO collection_article_list(collection_article_list_id, collection_id, article_id)
+        VALUES(#{collectionArticleListId}, #{collectionId}, #{articleId})
+    </insert>
+
+
+    <delete id="deleteArticleFromCollection" parameterType="string">
+        DELETE from collection_article_list
+        WHERE article_id = #{articleId}
+    </delete>
+
+
+</mapper>

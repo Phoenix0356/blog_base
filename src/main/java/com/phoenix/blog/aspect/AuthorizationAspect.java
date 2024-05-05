@@ -36,7 +36,6 @@ public class AuthorizationAspect {
         if (requireRoleLevel == 0){
             return;
         }
-
         String userRole = TokenContext.getUserRole();
         int userRoleLevel = Role.getLevel(userRole);
         if (userRoleLevel < requireRoleLevel) {

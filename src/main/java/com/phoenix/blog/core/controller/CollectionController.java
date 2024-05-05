@@ -51,6 +51,7 @@ public class CollectionController {
 
     //创建收藏夹
     @PostMapping("/save")
+    @AuthorizationRequired(Role.MEMBER)
     public ResultVO saveCollection(@RequestBody CollectionDTO collectionDTO){
         collectionService.saveCollection(collectionDTO);
         return ResultVO.success("create collection success");

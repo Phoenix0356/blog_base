@@ -1,7 +1,6 @@
 package com.phoenix.blog.core.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.phoenix.blog.config.JwtConfig;
 import com.phoenix.blog.config.PictureConfig;
 import com.phoenix.blog.config.URLConfig;
@@ -68,9 +67,8 @@ public class UserServiceImpl implements UserService {
 
         if (user == null) throw new UserNotFoundException();
 
-        DataUtil.setFields(user,userDTO,()->{
-            user.setUsername(userDTO.getUsername());
-        });
+        DataUtil.setFields(user,userDTO,()->
+                user.setUsername(userDTO.getUsername()));
 
         try {
             userMapper.updateById(user);
@@ -89,8 +87,8 @@ public class UserServiceImpl implements UserService {
         String username = userRegisterDTO.getUsername();
         String password = userRegisterDTO.getPassword();
         String avatarName = PictureUtil.saveOrUpdateFile(userRegisterDTO.getAvatarBase64(), null,pictureConfig.defaultAvatarPath,true);
-        //Todo
-        String avatarURL = HttpConstant.HTTP_PREFIX+urlConfig.getBaseURL()
+
+        String avatarURL = HttpConstant.HTTPS_PREFIX+urlConfig.dnsName
                 +pictureConfig.getDefaultAvatarURL()
                 +avatarName;
 

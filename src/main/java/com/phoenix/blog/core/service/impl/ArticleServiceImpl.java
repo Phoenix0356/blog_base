@@ -27,6 +27,7 @@ public class ArticleServiceImpl implements ArticleService {
     @Override
     @Transactional
     public ArticleVO getArticleById(String articleId) {
+
         if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
         ArticleVO articleVO = articleMapper.selectArticleWithPublisher(articleId);
         if (articleVO == null){

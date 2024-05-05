@@ -19,10 +19,4 @@ class BlogApplicationTests {
     void contextLoads() {
 
     }
-
-    @Test
-    void testRedis(){
-
-
-    }
 }

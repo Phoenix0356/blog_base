@@ -49,9 +49,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserVO getUser(String userId) {
+    public UserVO getUserById(String userId) {
         if (DataUtil.isEmptyData(userId)) throw new InvalidateArgumentException();
-        User user = userMapper.selectOne(new QueryWrapper<User>().eq("user_id",userId));
+        User user = userMapper.selectById(userId);
 
         if (user == null) {
             throw new UserNotFoundException();
@@ -60,6 +60,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public UserVO getUserByUsername(String username){
+        if (DataUtil.isEmptyData(username)) throw new InvalidateArgumentException();
+
+        User user = userMapper.selectOne(new QueryWrapper<User>().eq("username",username));
+
+        if (user == null){
+            throw new UserNotFoundException();
+        }
+        return UserVO.BuildVO(user,null);
+    }
+
+    @Override
+    @Transactional
     public UserVO updateUser(UserDTO userDTO,String userId) {
         if (DataUtil.isEmptyData(userId)) throw new InvalidateArgumentException();
 
@@ -67,14 +81,15 @@ public class UserServiceImpl implements UserService {
 
         if (user == null) throw new UserNotFoundException();
 
+        String newUsername = userDTO.getUsername();
         DataUtil.setFields(user,userDTO,()->
-                user.setUsername(userDTO.getUsername()));
+                user.setUsername(newUsername));
 
-        try {
-            userMapper.updateById(user);
-        }catch (Exception e){
-            throw new InvalidateArgumentException();
+        if (userMapper.selectOne(new QueryWrapper<User>().eq("username",newUsername))!=null){
+            throw new UsernameExistException();
         }
+        userMapper.updateById(user);
+
 
 
         return UserVO.BuildVO(user,null);
@@ -103,10 +118,6 @@ public class UserServiceImpl implements UserService {
                 .setUserRole(userRegisterDTO.getRole())
                 .setUserAvatarURL(avatarURL)
                 .setRegisterTime(new Timestamp(System.currentTimeMillis())));
-
-        //创建默认收藏夹
-
-        collectionService.saveCollection(new CollectionDTO().setCollectionUsername(username));
 
         userMapper.insert(user);
 

@@ -9,14 +9,12 @@ import lombok.Data;
 public class CollectionVO {
     String collectionId;
     String collectionName;
-    String collectionUserName;
     String collectionReviseTime;
     String collectionDescription;
 
     public static CollectionVO buildVo(Collection collection){
         return CollectionVO.builder()
                 .collectionId(collection.getCollectionId())
-                .collectionUserName(collection.getUsername())
                 .collectionName(collection.getCollectionName())
                 .collectionReviseTime(collection.collectionReviseTime.toString())
                 .collectionDescription(collection.getCollectionDescription())

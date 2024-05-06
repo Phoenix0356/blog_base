@@ -13,7 +13,9 @@ public interface UserService {
 
     public UserVO login(UserLoginDTO userLoginDTO);
 
-    public UserVO getUser(String userId);
+    public UserVO getUserById(String userId);
+
+    public UserVO getUserByUsername(String username);
 
     public UserVO updateUser(UserDTO userDTO,String userId);
 

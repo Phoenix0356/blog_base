@@ -22,7 +22,7 @@ public class UserController {
     public ResultVO getUser(){
         UserVO userVO;
         try {
-            userVO = userService.getUser(TokenContext.getUserId());
+            userVO = userService.getUserById(TokenContext.getUserId());
         }finally {
             TokenContext.removeClaims();
         }

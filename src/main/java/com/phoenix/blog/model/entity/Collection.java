@@ -22,8 +22,8 @@ public class Collection {
     @TableId(value = "collection_id",type = IdType.ASSIGN_UUID)
     public String collectionId;
 
-    @TableField(value = "collection_username")
-    public String Username;
+    @TableField(value = "collection_user_id")
+    public String collectionUserId;
 
     @TableField(value = "collection_name")
     public String collectionName;

@@ -1,6 +1,7 @@
 package com.phoenix.blog.core.controller;
 
 import com.phoenix.blog.annotations.AuthorizationRequired;
+import com.phoenix.blog.context.TokenContext;
 import com.phoenix.blog.core.service.CollectionService;
 import com.phoenix.blog.enumeration.Role;
 import com.phoenix.blog.model.dto.CollectionAddDTO;
@@ -34,10 +35,10 @@ public class CollectionController {
        return ResultVO.success("get collections success",collectionVOList);
     }
 
-    @GetMapping("/all/article")
+    @GetMapping("/{collectionId}/articles")
     @AuthorizationRequired(Role.MEMBER)
-    public ResultVO getAllArticles(@RequestParam String username,String collectionName){
-        List<ArticleVO> allArticleList = collectionService.getAllArticleList(username,collectionName);
+    public ResultVO getAllArticles(@PathVariable String collectionId){
+        List<ArticleVO> allArticleList = collectionService.getAllArticleList(collectionId);
         return ResultVO.success("load articles success",allArticleList);
     }
 
@@ -45,7 +46,7 @@ public class CollectionController {
     @PostMapping("/add")
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO saveArticleIntoCollection(@RequestBody CollectionAddDTO collectionAddDTO){
-        collectionService.saveArticleIntoCollection(collectionAddDTO);
+        collectionService.saveArticleIntoCollection(collectionAddDTO,TokenContext.getUserId());
         return ResultVO.success("add article success");
     }
 
@@ -53,7 +54,7 @@ public class CollectionController {
     @PostMapping("/save")
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO saveCollection(@RequestBody CollectionDTO collectionDTO){
-        collectionService.saveCollection(collectionDTO);
+        collectionService.saveCollection(collectionDTO,TokenContext.getUserId());
         return ResultVO.success("create collection success");
     }
 
@@ -70,5 +71,4 @@ public class CollectionController {
         collectionService.deleteArticleFromCollection(articleId);
         return ResultVO.success("article delete success");
     }
-
 }

@@ -16,8 +16,10 @@ public interface CollectionService {
 
     public void saveCollection(CollectionDTO collectionDTO, String userId);
 
-    public void updateArticleFromCollection();
+    public void updateCollection(CollectionDTO collectionDTO);
 
     public void deleteArticleFromCollection(String articleId);
+
+    public void deleteCollectionById(String collectionId);
 
 }

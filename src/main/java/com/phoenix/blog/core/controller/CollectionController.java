@@ -58,17 +58,17 @@ public class CollectionController {
         return ResultVO.success("create collection success");
     }
 
-    //Todo
     @PutMapping("/update")
-    public ResultVO updateCollection(@RequestBody String articleId){
-        return null;
+    public ResultVO updateCollection(@RequestBody CollectionDTO collectionDTO){
+        collectionService.updateCollection(collectionDTO);
+        return ResultVO.success("update collection success");
     }
 
 
-    @DeleteMapping("/delete")
+    @DeleteMapping("/delete/{collectionId}")
     @AuthorizationRequired(Role.MEMBER)
-    public ResultVO deleteArticleFromCollection(@RequestParam String articleId){
-        collectionService.deleteArticleFromCollection(articleId);
+    public ResultVO deleteCollection(@PathVariable String collectionId){
+        collectionService.deleteCollectionById(collectionId);
         return ResultVO.success("article delete success");
     }
 }

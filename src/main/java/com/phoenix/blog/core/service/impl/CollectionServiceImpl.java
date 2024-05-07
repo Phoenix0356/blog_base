@@ -5,6 +5,7 @@ import com.phoenix.blog.core.mapper.CollectionMapper;
 import com.phoenix.blog.core.service.CollectionService;
 import com.phoenix.blog.exceptions.CollectionContainsException;
 import com.phoenix.blog.exceptions.CollectionExistException;
+import com.phoenix.blog.exceptions.CollectionNotFoundException;
 import com.phoenix.blog.model.dto.CollectionAddDTO;
 import com.phoenix.blog.model.dto.CollectionDTO;
 import com.phoenix.blog.model.entity.Collection;
@@ -54,6 +55,7 @@ public class CollectionServiceImpl implements CollectionService {
         DataUtil.setFields(collection,collectionDTO,() ->
             collection.setCollectionUserId(userId)
                     .setCollectionName(collectionName)
+                    .setCollectionDescription(collectionDTO.getCollectionDescription())
                     .setCollectionReviseTime(new Timestamp(System.currentTimeMillis()))
 
         );
@@ -83,12 +85,28 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
-    public void updateArticleFromCollection() {
+    public void updateCollection(CollectionDTO collectionDTO) {
+        Collection collection = collectionMapper.selectById(collectionDTO.getCollectionId());
+        if (collection == null){
+            throw new CollectionNotFoundException();
+        }
 
+        DataUtil.setFields(collection,collectionDTO,()->{
+            collection.setCollectionDescription(collectionDTO.getCollectionDescription())
+                    .setCollectionName(collectionDTO.getCollectionName())
+                    .setCollectionReviseTime(new Timestamp(System.currentTimeMillis()));
+        });
+        System.out.println(collection);
+        collectionMapper.updateById(collection);
     }
 
     @Override
     public void deleteArticleFromCollection(String articleId) {
         collectionMapper.deleteArticleFromCollection(articleId);
+    }
+
+    @Override
+    public void deleteCollectionById(String collectionId) {
+        collectionMapper.deleteById(collectionId);
     }
 }

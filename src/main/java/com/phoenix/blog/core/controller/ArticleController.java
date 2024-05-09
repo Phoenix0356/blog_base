@@ -28,10 +28,10 @@ public class ArticleController {
 
     @GetMapping("/get/all")
     @AuthorizationRequired(Role.VISITOR)
-    public ResultVO getArticleAll(){
+    public ResultVO getArticleAll(@RequestParam("sortBy") int sortStrategy){
         List<ArticleVO> articleVOList;
         try {
-            articleVOList = articleService.getArticleAll();
+            articleVOList = articleService.getArticleAll(sortStrategy);
         }finally {
             TokenContext.removeClaims();
         }

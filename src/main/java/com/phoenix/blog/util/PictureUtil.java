@@ -13,7 +13,6 @@ public class PictureUtil {
             //delete the uploaded image
             deleteImage(originalPath);
 
-            //Todo
             //String resourcesPath = new ClassPathResource(path).getFile().getAbsolutePath();
             String resourcesPath = System.getProperty("user.dir")+path;
 

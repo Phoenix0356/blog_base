@@ -1,6 +1,4 @@
-package com.phoenix.blog.exceptions;
-
-import com.fasterxml.jackson.databind.ser.Serializers;
+package com.phoenix.blog.exceptions.userException;
 
 public class ArticleNotFoundException extends BaseException {
     public ArticleNotFoundException() {

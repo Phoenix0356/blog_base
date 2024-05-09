@@ -1,4 +1,4 @@
-package com.phoenix.blog.exceptions;
+package com.phoenix.blog.exceptions.userException;
 
 public class ArticleFormatException extends BaseException{
     public ArticleFormatException() {

@@ -12,6 +12,7 @@ import com.phoenix.blog.model.vo.ResultVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.http.HttpRequest;
 import java.util.List;
 
 @RestController
@@ -28,6 +29,7 @@ public class CollectionController {
         return ResultVO.success("get collection success",collectionVO);
     }
 
+    //Todo:使用路径变量
     @GetMapping("/all")
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO getAllCollection(@RequestParam String username){

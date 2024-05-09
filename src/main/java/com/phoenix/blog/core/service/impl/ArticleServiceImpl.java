@@ -1,14 +1,14 @@
 package com.phoenix.blog.core.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.phoenix.blog.constant.SortConstant;
 import com.phoenix.blog.core.mapper.ArticleMapper;
 import com.phoenix.blog.core.service.ArticleService;
 import com.phoenix.blog.model.dto.ArticleDTO;
 import com.phoenix.blog.model.entity.Article;
-import com.phoenix.blog.exceptions.ArticleFormatException;
-import com.phoenix.blog.exceptions.ArticleNotFoundException;
-import com.phoenix.blog.exceptions.InvalidateArgumentException;
+import com.phoenix.blog.exceptions.userException.ArticleFormatException;
+import com.phoenix.blog.exceptions.userException.ArticleNotFoundException;
+import com.phoenix.blog.exceptions.userException.InvalidateArgumentException;
 import com.phoenix.blog.model.vo.ArticleVO;
 import com.phoenix.blog.util.DataUtil;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -39,8 +40,21 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     @Transactional
-    public List<ArticleVO> getArticleAll() {
-        return articleMapper.selectArticleWithPublisherList();
+    public List<ArticleVO> getArticleAll(int sortStrategy) {
+        List<ArticleVO> articleVOList = articleMapper.selectArticleWithPublisherList();
+
+        switch (sortStrategy){
+            case (SortConstant.SORT_BY_READ_COUNT):
+                articleVOList.sort(Comparator.comparing(ArticleVO::getArticleReadCount,Comparator.reverseOrder()));
+                break;
+            case (SortConstant.SORT_BY_UPVOTE_COUNT):
+                articleVOList.sort(Comparator.comparing(ArticleVO::getArticleUpvoteCount,Comparator.reverseOrder()));
+                break;
+            default:
+                break;
+        }
+
+        return articleVOList;
     }
 
     @Override
@@ -121,4 +135,5 @@ public class ArticleServiceImpl implements ArticleService {
 
         articleMapper.delete(new QueryWrapper<Article>().eq("article_id",articleId));
     }
+
 }

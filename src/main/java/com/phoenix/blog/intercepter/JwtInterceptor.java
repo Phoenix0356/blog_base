@@ -2,7 +2,7 @@ package com.phoenix.blog.intercepter;
 
 import com.phoenix.blog.config.JwtConfig;
 import com.phoenix.blog.context.TokenContext;
-import com.phoenix.blog.exceptions.JwtValidatingException;
+import com.phoenix.blog.exceptions.userException.JwtValidatingException;
 import com.phoenix.blog.util.DataUtil;
 import com.phoenix.blog.util.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -10,12 +10,9 @@ import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-
-import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor

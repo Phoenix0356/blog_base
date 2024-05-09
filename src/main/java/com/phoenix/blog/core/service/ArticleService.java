@@ -9,7 +9,7 @@ import java.util.List;
 public interface ArticleService {
 
     public ArticleVO getArticleById(String articleId);
-    public List<ArticleVO> getArticleAll();
+    public List<ArticleVO> getArticleAll(int sortStrategy);
 
     public List<ArticleVO> getArticleUSerList(String userId);
     public void SaveArticleByUser(ArticleDTO articleDTO);

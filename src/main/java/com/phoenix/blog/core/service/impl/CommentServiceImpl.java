@@ -1,11 +1,10 @@
 package com.phoenix.blog.core.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.phoenix.blog.core.mapper.CommentMapper;
 import com.phoenix.blog.core.service.CommentService;
-import com.phoenix.blog.exceptions.CommentFormatException;
-import com.phoenix.blog.exceptions.CommentNotFoundException;
-import com.phoenix.blog.exceptions.InvalidateArgumentException;
+import com.phoenix.blog.exceptions.userException.CommentFormatException;
+import com.phoenix.blog.exceptions.userException.CommentNotFoundException;
+import com.phoenix.blog.exceptions.userException.InvalidateArgumentException;
 import com.phoenix.blog.model.dto.CommentDTO;
 import com.phoenix.blog.model.entity.Comment;
 import com.phoenix.blog.model.vo.CommentVO;

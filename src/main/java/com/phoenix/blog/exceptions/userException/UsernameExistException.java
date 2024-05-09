@@ -1,6 +1,4 @@
-package com.phoenix.blog.exceptions;
-
-import java.sql.SQLException;
+package com.phoenix.blog.exceptions.userException;
 
 public class UsernameExistException extends BaseException {
     public UsernameExistException(){

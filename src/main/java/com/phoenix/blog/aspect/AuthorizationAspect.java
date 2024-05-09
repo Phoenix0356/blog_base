@@ -3,8 +3,7 @@ package com.phoenix.blog.aspect;
 import com.phoenix.blog.annotations.AuthorizationRequired;
 import com.phoenix.blog.context.TokenContext;
 import com.phoenix.blog.enumeration.Role;
-import com.phoenix.blog.exceptions.PermissionDeniedException;
-import com.phoenix.blog.util.DataUtil;
+import com.phoenix.blog.exceptions.userException.PermissionDeniedException;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -32,7 +31,7 @@ public class AuthorizationAspect {
             requireRoleLevel = authorizationRequired.value().getLevel();
         }
 
-        //最低权限直接放行
+        //接口要求权限为最低直接放行
         if (requireRoleLevel == 0){
             return;
         }

@@ -1,13 +1,8 @@
 package com.phoenix.blog.model.vo;
 
 import com.phoenix.blog.model.entity.Article;
-import com.phoenix.blog.model.entity.User;
-import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.Data;
-
-import java.sql.Timestamp;
-
 @Data
 @Builder
 public class ArticleVO {
@@ -21,6 +16,8 @@ public class ArticleVO {
 
     String username;
     String userAvatarURL;
+
+    String collectionArticleNote;
 
 
     public static ArticleVO buildVO(Article article) {

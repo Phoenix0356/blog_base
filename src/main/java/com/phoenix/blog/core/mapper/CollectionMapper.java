@@ -17,7 +17,9 @@ public interface CollectionMapper extends BaseMapper<Collection> {
 
     void insertArticleIntoCollection(Map<String,String> map);
 
-    void deleteArticleFromCollection(String articleId);
+    void updateArticleNoteIntoCollection(String collectionId, String articleId, String remark);
+
+    void deleteArticleFromCollection(String collectionId,String articleId);
 
     int isArticleExistsInCollection(String collectionId,String articleId);
 }

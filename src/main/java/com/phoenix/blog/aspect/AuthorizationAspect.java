@@ -3,7 +3,7 @@ package com.phoenix.blog.aspect;
 import com.phoenix.blog.annotations.AuthorizationRequired;
 import com.phoenix.blog.context.TokenContext;
 import com.phoenix.blog.enumeration.Role;
-import com.phoenix.blog.exceptions.userException.PermissionDeniedException;
+import com.phoenix.blog.exceptions.clientException.PermissionDeniedException;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;

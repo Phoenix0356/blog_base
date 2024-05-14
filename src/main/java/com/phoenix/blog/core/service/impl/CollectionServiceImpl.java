@@ -3,10 +3,11 @@ package com.phoenix.blog.core.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.phoenix.blog.constant.CommonConstant;
 import com.phoenix.blog.core.mapper.CollectionMapper;
+import com.phoenix.blog.core.service.ArticleService;
 import com.phoenix.blog.core.service.CollectionService;
-import com.phoenix.blog.exceptions.userException.CollectionContainsException;
-import com.phoenix.blog.exceptions.userException.CollectionExistException;
-import com.phoenix.blog.exceptions.userException.CollectionNotFoundException;
+import com.phoenix.blog.exceptions.clientException.CollectionContainsException;
+import com.phoenix.blog.exceptions.clientException.CollectionExistException;
+import com.phoenix.blog.exceptions.clientException.CollectionNotFoundException;
 import com.phoenix.blog.model.dto.ArticleNoteDTO;
 import com.phoenix.blog.model.dto.CollectionAddDTO;
 import com.phoenix.blog.model.dto.CollectionDTO;
@@ -26,6 +27,7 @@ import java.util.*;
 public class CollectionServiceImpl implements CollectionService {
 
     private final CollectionMapper collectionMapper;
+    private final ArticleService articleService;
 
     @Override
     @Transactional
@@ -121,6 +123,12 @@ public class CollectionServiceImpl implements CollectionService {
     @Override
     @Transactional
     public void deleteArticleFromCollect(String collectionId, String articleId) {
+        //Todo:线程不安全
+//        Article article = articleMapper.selectById(articleId);
+//        article.setArticleBookmarkCount(article.getArticleBookmarkCount()-1);
+//        articleMapper.updateById(article);
+
+        articleService.updateArticleBookmarkCount(articleId,-1);
         collectionMapper.deleteArticleFromCollection(collectionId,articleId);
     }
 

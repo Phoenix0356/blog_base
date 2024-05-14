@@ -8,13 +8,12 @@ import java.util.List;
 
 public interface ArticleService {
 
-    public ArticleVO getArticleById(String articleId);
-    public List<ArticleVO> getArticleAll(int sortStrategy);
-
-    public List<ArticleVO> getArticleUSerList(String userId);
-    public void SaveArticleByUser(ArticleDTO articleDTO);
-    public void updateArticleContent(ArticleDTO articleDTO);
-
-    public void updateArticleStatics(ArticleDTO articleDTO);
-    public void deleteArticleById(String articleId);
+    ArticleVO getArticleById(String articleId);
+    List<ArticleVO> getArticleAll(int sortStrategy);
+    List<ArticleVO> getArticleUserList(String userId);
+    void SaveArticleByUser(ArticleDTO articleDTO);
+    void updateArticleContent(ArticleDTO articleDTO);
+    void updateArticleStatics(ArticleDTO articleDTO);
+    void updateArticleBookmarkCount(String articleId, int bookmarkCountChange);
+    void deleteArticleById(String articleId);
 }

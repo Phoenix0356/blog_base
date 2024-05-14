@@ -51,7 +51,7 @@ public class UserController {
     @DeleteMapping("/logout")
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO logout(){
-        userService.logout(TokenContext.getJti(),TokenContext.getExpirationTime());
+        userService.logout(TokenContext.getJti(),TokenContext.getUserId(),TokenContext.getExpirationTime());
         return ResultVO.success("logout success");
     }
 }

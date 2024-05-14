@@ -6,14 +6,11 @@ import com.phoenix.blog.config.PictureConfig;
 import com.phoenix.blog.config.URLConfig;
 import com.phoenix.blog.constant.HttpConstant;
 import com.phoenix.blog.core.service.CollectionService;
-import com.phoenix.blog.exceptions.userException.PasswordErrorException;
+import com.phoenix.blog.exceptions.clientException.*;
 import com.phoenix.blog.model.dto.UserDTO;
 import com.phoenix.blog.model.dto.UserLoginDTO;
 import com.phoenix.blog.model.dto.UserRegisterDTO;
 import com.phoenix.blog.model.entity.User;
-import com.phoenix.blog.exceptions.userException.InvalidateArgumentException;
-import com.phoenix.blog.exceptions.userException.UserNotFoundException;
-import com.phoenix.blog.exceptions.userException.UsernameExistException;
 import com.phoenix.blog.core.mapper.UserMapper;
 import com.phoenix.blog.core.service.UserService;
 import com.phoenix.blog.model.vo.UserVO;
@@ -44,6 +41,7 @@ public class UserServiceImpl implements UserService {
     final URLConfig urlConfig;
 
     final PictureConfig pictureConfig;
+
     final JwtConfig jwtConfig;
 
     @Override
@@ -89,8 +87,6 @@ public class UserServiceImpl implements UserService {
         }
         userMapper.updateById(user);
 
-
-
         return UserVO.BuildVO(user,null);
     }
 
@@ -122,7 +118,7 @@ public class UserServiceImpl implements UserService {
 
         String token = JwtUtil.getJwt(user.getUserId(), user.getUserRole().name(),
                 jwtConfig.secret, jwtConfig.expiration);
-
+        stringRedisTemplate.opsForValue().set(user.getUserId(),"",jwtConfig.expiration,TimeUnit.SECONDS);
         return UserVO.BuildVO(user,token);
     }
 
@@ -134,28 +130,29 @@ public class UserServiceImpl implements UserService {
 
         String username = userLoginDTO.getUsername();
         String password = userLoginDTO.getPassword();
-
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("username",username));
-
         if (user == null){
             throw new UserNotFoundException();
         }
-
+        if (stringRedisTemplate.opsForValue().get(user.getUserId())!=null){
+            throw new UserAlreadyLoginException();
+        }
         if (!passwordEncoder.matches(password,user.getPassword())){
             throw new PasswordErrorException();
         }
 
         String token = JwtUtil.getJwt(user.getUserId(), user.getUserRole().name(),
                 jwtConfig.secret, jwtConfig.expiration);
-
+        stringRedisTemplate.opsForValue().set(user.getUserId(),"",jwtConfig.expiration,TimeUnit.SECONDS);
         return UserVO.BuildVO(user,token);
     }
 
     @Override
     @Transactional
-    public void logout(String jwtId, Date jwtExpirationTime) {
-        Date now = new Date();
-        long expTime = Math.max(jwtExpirationTime.getTime()-now.getTime(),0);
-        stringRedisTemplate.opsForValue().set(jwtId,"",expTime, TimeUnit.MILLISECONDS);
+    public void logout(String jwtId, String userId, Date jwtExpirationTime) {
+        long expTime = Math.max(jwtExpirationTime.getTime()-System.currentTimeMillis(),0);
+        stringRedisTemplate.opsForValue().set(jwtId,"",expTime/1000, TimeUnit.SECONDS);
+        stringRedisTemplate.delete(userId);
+
     }
 }

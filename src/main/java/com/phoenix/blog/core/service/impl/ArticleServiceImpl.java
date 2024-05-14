@@ -6,9 +6,9 @@ import com.phoenix.blog.core.mapper.ArticleMapper;
 import com.phoenix.blog.core.service.ArticleService;
 import com.phoenix.blog.model.dto.ArticleDTO;
 import com.phoenix.blog.model.entity.Article;
-import com.phoenix.blog.exceptions.userException.ArticleFormatException;
-import com.phoenix.blog.exceptions.userException.ArticleNotFoundException;
-import com.phoenix.blog.exceptions.userException.InvalidateArgumentException;
+import com.phoenix.blog.exceptions.clientException.ArticleFormatException;
+import com.phoenix.blog.exceptions.clientException.ArticleNotFoundException;
+import com.phoenix.blog.exceptions.clientException.InvalidateArgumentException;
 import com.phoenix.blog.model.vo.ArticleVO;
 import com.phoenix.blog.util.DataUtil;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +18,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 @RequiredArgsConstructor
-public class ArticleServiceImpl implements ArticleService {
+public class ArticleServiceImpl implements ArticleService{
 
     final ArticleMapper articleMapper;
+    private final ConcurrentHashMap<String,ReentrantLock> articleStaticsLockMap = new ConcurrentHashMap<>();;
 
     @Override
     @Transactional
@@ -59,7 +62,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Override
     @Transactional
-    public List<ArticleVO> getArticleUSerList(String userId) {
+    public List<ArticleVO> getArticleUserList(String userId) {
         return articleMapper.selectUserArticleList(userId);
     }
 
@@ -96,33 +99,51 @@ public class ArticleServiceImpl implements ArticleService {
         Article article = articleMapper.selectById(articleId);
         if (article == null) throw new ArticleNotFoundException();
 
-        DataUtil.setFields(article,articleDTO,() ->
+        DataUtil.setFields(article, articleDTO, () ->
                 article.setArticleTitle(articleDTO.getArticleTitle())
-                .setArticleContent(articleDTO.getArticleContent())
-                .setArticleReviseTime(new Timestamp(System.currentTimeMillis())));
-
-
+                        .setArticleContent(articleDTO.getArticleContent())
+                        .setArticleReviseTime(new Timestamp(System.currentTimeMillis())));
         articleMapper.updateById(article);
-
-
     }
 
     @Override
-    @Transactional
     public void updateArticleStatics(ArticleDTO articleDTO) {
-        String articleId = articleDTO.getArticleId();
+        ReentrantLock reentrantLock = articleStaticsLockMap.computeIfAbsent(articleDTO.getArticleId(), k -> new ReentrantLock());
+        reentrantLock.lock();
+        try {
+            String articleId = articleDTO.getArticleId();
 
-        if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
+            if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
 
-        Article article = articleMapper.selectById(articleId);
-        if (article == null) throw new ArticleNotFoundException();
+            Article article = articleMapper.selectById(articleId);
+            if (article == null) throw new ArticleNotFoundException();
 
-        DataUtil.setFields(article, articleDTO, () ->
-               article.setArticleReadCount(articleDTO.getArticleReadCount())
-                       .setArticleUpvoteCount(articleDTO.getArticleUpvoteCount())
-                       .setArticleBookmarkCount(articleDTO.getArticleBookmarkCount())
-        );
-        articleMapper.updateById(article);
+            int newUpvoteCount = article.getArticleUpvoteCount()+articleDTO.getArticleUpvoteCountChange();
+            int newBookmarkCount = article.getArticleBookmarkCount()+articleDTO.getArticleBookmarkCountChange();
+
+            DataUtil.setFields(article, articleDTO, () ->
+                    article.setArticleReadCount(article.getArticleReadCount()+1)
+                            .setArticleUpvoteCount(newUpvoteCount)
+                            .setArticleBookmarkCount(newBookmarkCount)
+            );
+            articleMapper.updateById(article);
+        }
+        finally{
+            reentrantLock.unlock();
+        }
+    }
+
+    @Override
+    public void updateArticleBookmarkCount(String articleId, int bookmarkCountChange) {
+        ReentrantLock reentrantLock = articleStaticsLockMap.computeIfAbsent(articleId, k -> new ReentrantLock());
+        reentrantLock.lock();
+        try {
+            Article article = articleMapper.selectById(articleId);
+            article.setArticleBookmarkCount(article.getArticleBookmarkCount()+ bookmarkCountChange);
+            articleMapper.updateById(article);
+        }finally {
+            reentrantLock.unlock();
+        }
     }
 
     @Override
@@ -135,5 +156,6 @@ public class ArticleServiceImpl implements ArticleService {
 
         articleMapper.delete(new QueryWrapper<Article>().eq("article_id",articleId));
     }
+
 
 }

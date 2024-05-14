@@ -1,4 +1,4 @@
-package com.phoenix.blog.exceptions.userException;
+package com.phoenix.blog.exceptions.clientException;
 
 public class CollectionExistException extends BaseException {
     public CollectionExistException() {

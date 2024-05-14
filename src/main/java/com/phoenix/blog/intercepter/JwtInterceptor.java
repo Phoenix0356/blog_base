@@ -2,7 +2,7 @@ package com.phoenix.blog.intercepter;
 
 import com.phoenix.blog.config.JwtConfig;
 import com.phoenix.blog.context.TokenContext;
-import com.phoenix.blog.exceptions.userException.JwtValidatingException;
+import com.phoenix.blog.exceptions.clientException.JwtValidatingException;
 import com.phoenix.blog.util.DataUtil;
 import com.phoenix.blog.util.JwtUtil;
 import io.jsonwebtoken.Claims;

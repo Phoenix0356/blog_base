@@ -5,8 +5,6 @@ import io.jsonwebtoken.Claims;
 
 import java.util.Date;
 
-//Todo
-//aop删除threadLocal
 public class TokenContext {
     private static final ThreadLocal<Claims> threadLocal = new ThreadLocal<>();
 

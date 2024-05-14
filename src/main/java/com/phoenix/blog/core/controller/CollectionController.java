@@ -2,6 +2,7 @@ package com.phoenix.blog.core.controller;
 
 import com.phoenix.blog.annotations.AuthorizationRequired;
 import com.phoenix.blog.context.TokenContext;
+import com.phoenix.blog.core.service.ArticleService;
 import com.phoenix.blog.core.service.CollectionService;
 import com.phoenix.blog.enumeration.Role;
 import com.phoenix.blog.model.dto.ArticleNoteDTO;
@@ -12,14 +13,15 @@ import com.phoenix.blog.model.vo.CollectionVO;
 import com.phoenix.blog.model.vo.ResultVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/collection")
 @RequiredArgsConstructor
 public class CollectionController {
-
     private final CollectionService collectionService;
+
 
     @GetMapping("/get/{collectionId}")
     @AuthorizationRequired(Role.MEMBER)
@@ -32,8 +34,8 @@ public class CollectionController {
     @GetMapping("/all")
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO getAllCollection(@RequestParam String username){
-       List<CollectionVO> collectionVOList = collectionService.getAllCollections(username);
-       return ResultVO.success("get collections success",collectionVOList);
+        List<CollectionVO> collectionVOList = collectionService.getAllCollections(username);
+        return ResultVO.success("get collections success",collectionVOList);
     }
 
     @GetMapping("/{collectionId}/articles")

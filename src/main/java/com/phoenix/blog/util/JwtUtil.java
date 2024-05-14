@@ -20,12 +20,11 @@ public class JwtUtil {
         claims.put(JwtConstant.SUBTITLE,userId);
         claims.put(JwtConstant.ROLE,role);
         claims.put(Claims.ID, UUID.randomUUID().toString());
-        claims.put(Claims.EXPIRATION,System.currentTimeMillis()+expiration);
+        claims.put(Claims.EXPIRATION,System.currentTimeMillis()/1000+expiration);
         return Jwts.builder()
                 .claims(claims)
                 .signWith(Keys.hmacShaKeyFor(secret.getBytes()))
                 .compact();
-
     }
 
 

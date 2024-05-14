@@ -42,7 +42,7 @@ public class ArticleController {
     public ResultVO getUserArticleListById(){
         List<ArticleVO> articleVOList;
         try {
-            articleVOList = articleService.getArticleUSerList(TokenContext.getUserId());
+            articleVOList = articleService.getArticleUserList(TokenContext.getUserId());
         }finally {
             TokenContext.removeClaims();
         }

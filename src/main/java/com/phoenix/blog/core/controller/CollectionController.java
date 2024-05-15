@@ -2,7 +2,6 @@ package com.phoenix.blog.core.controller;
 
 import com.phoenix.blog.annotations.AuthorizationRequired;
 import com.phoenix.blog.context.TokenContext;
-import com.phoenix.blog.core.service.ArticleService;
 import com.phoenix.blog.core.service.CollectionService;
 import com.phoenix.blog.enumeration.Role;
 import com.phoenix.blog.model.dto.ArticleNoteDTO;

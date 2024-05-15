@@ -5,7 +5,8 @@ import com.phoenix.blog.config.JwtConfig;
 import com.phoenix.blog.config.PictureConfig;
 import com.phoenix.blog.config.URLConfig;
 import com.phoenix.blog.constant.HttpConstant;
-import com.phoenix.blog.core.service.CollectionService;
+import com.phoenix.blog.core.mapper.UserLogMapper;
+import com.phoenix.blog.core.service.UserLogService;
 import com.phoenix.blog.exceptions.clientException.*;
 import com.phoenix.blog.model.dto.UserDTO;
 import com.phoenix.blog.model.dto.UserLoginDTO;
@@ -32,11 +33,12 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    final CollectionService collectionService;
+    final UserLogService userLogService;
 
     final StringRedisTemplate stringRedisTemplate;
 
     final UserMapper userMapper;
+    final UserLogMapper userLogMapper;
 
     final URLConfig urlConfig;
 
@@ -115,10 +117,12 @@ public class UserServiceImpl implements UserService {
                 .setRegisterTime(new Timestamp(System.currentTimeMillis())));
 
         userMapper.insert(user);
-
         String token = JwtUtil.getJwt(user.getUserId(), user.getUserRole().name(),
                 jwtConfig.secret, jwtConfig.expiration);
         stringRedisTemplate.opsForValue().set(user.getUserId(),"",jwtConfig.expiration,TimeUnit.SECONDS);
+
+        //记录日志
+        userLogService.saveUserLog(user);
         return UserVO.BuildVO(user,token);
     }
 
@@ -130,6 +134,7 @@ public class UserServiceImpl implements UserService {
 
         String username = userLoginDTO.getUsername();
         String password = userLoginDTO.getPassword();
+
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("username",username));
         if (user == null){
             throw new UserNotFoundException();
@@ -144,6 +149,10 @@ public class UserServiceImpl implements UserService {
         String token = JwtUtil.getJwt(user.getUserId(), user.getUserRole().name(),
                 jwtConfig.secret, jwtConfig.expiration);
         stringRedisTemplate.opsForValue().set(user.getUserId(),"",jwtConfig.expiration,TimeUnit.SECONDS);
+
+        //记录日志
+        userLogService.saveUserLog(user);
+
         return UserVO.BuildVO(user,token);
     }
 
@@ -153,6 +162,5 @@ public class UserServiceImpl implements UserService {
         long expTime = Math.max(jwtExpirationTime.getTime()-System.currentTimeMillis(),0);
         stringRedisTemplate.opsForValue().set(jwtId,"",expTime/1000, TimeUnit.SECONDS);
         stringRedisTemplate.delete(userId);
-
     }
 }

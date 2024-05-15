@@ -6,13 +6,13 @@ import com.phoenix.blog.model.vo.CommentVO;
 import java.util.List;
 
 public interface CommentService {
-    public CommentVO getCommentById(String commentId);
+    CommentVO getCommentById(String commentId);
 
-    public List<CommentVO> getCommentArticleList(String articleId) throws InterruptedException;
+    List<CommentVO> getCommentArticleList(String articleId) throws InterruptedException;
 
-    public CommentVO saveComment(CommentDTO commentDTO) throws InterruptedException;
+    CommentVO saveComment(CommentDTO commentDTO) throws InterruptedException;
 
-    public CommentVO updateComment(CommentDTO commentDTO);
+    CommentVO updateComment(CommentDTO commentDTO);
 
-    public void deleteComment(String commentId);
+    void deleteComment(String commentId);
 }

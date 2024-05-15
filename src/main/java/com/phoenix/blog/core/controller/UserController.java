@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserController {
+
     final UserService userService;
     @GetMapping("/get")
     @AuthorizationRequired(Role.MEMBER)
@@ -48,7 +49,7 @@ public class UserController {
         return ResultVO.success("Login success",userVO);
     }
 
-    @DeleteMapping("/logout")
+    @PostMapping("/logout")
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO logout(){
         userService.logout(TokenContext.getJti(),TokenContext.getUserId(),TokenContext.getExpirationTime());

@@ -26,7 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ArticleServiceImpl implements ArticleService{
 
     final ArticleMapper articleMapper;
-    private final ConcurrentHashMap<String,ReentrantLock> articleStaticsLockMap = new ConcurrentHashMap<>();;
+    private final ConcurrentHashMap<String,ReentrantLock> articleStaticsLockMap = new ConcurrentHashMap<>();
 
     @Override
     @Transactional

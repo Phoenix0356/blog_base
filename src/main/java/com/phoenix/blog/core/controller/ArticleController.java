@@ -63,18 +63,17 @@ public class ArticleController {
         return ResultVO.success("Article save success");
     }
 
-
+    //更新文章内容
     @PutMapping("/update/content")
     @AuthorizationRequired(Role.WRITER)
-    //更新文章内容
     public ResultVO updateArticleContent(@RequestBody ArticleDTO articleDTO){
         articleService.updateArticleContent(articleDTO);
         return ResultVO.success("Article save success");
     }
 
+    //更新阅读和点赞数
     @PutMapping("/update/statics")
     @AuthorizationRequired(Role.VISITOR)
-    //更新阅读和点赞数
     public ResultVO updateArticleStatics(@RequestBody ArticleDTO articleDTO){
         articleService.updateArticleStatics(articleDTO);
         return ResultVO.success("Article save success");

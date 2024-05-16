@@ -9,6 +9,7 @@ import com.phoenix.blog.model.entity.Article;
 import com.phoenix.blog.exceptions.clientException.ArticleFormatException;
 import com.phoenix.blog.exceptions.clientException.ArticleNotFoundException;
 import com.phoenix.blog.exceptions.clientException.InvalidateArgumentException;
+import com.phoenix.blog.model.pojo.LinkedConcurrentMap;
 import com.phoenix.blog.model.vo.ArticleVO;
 import com.phoenix.blog.util.DataUtil;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Service
@@ -26,7 +27,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ArticleServiceImpl implements ArticleService{
 
     final ArticleMapper articleMapper;
-    private final ConcurrentHashMap<String,ReentrantLock> articleStaticsLockMap = new ConcurrentHashMap<>();
+    private final LinkedConcurrentMap<String,ReentrantLock> articleStaticsLockPool = new LinkedConcurrentMap<>();
 
     @Override
     @Transactional
@@ -108,8 +109,15 @@ public class ArticleServiceImpl implements ArticleService{
 
     @Override
     public void updateArticleStatics(ArticleDTO articleDTO) {
-        ReentrantLock reentrantLock = articleStaticsLockMap.computeIfAbsent(articleDTO.getArticleId(), k -> new ReentrantLock());
+        ReentrantLock reentrantLock;
+        try {
+            reentrantLock = articleStaticsLockPool.getIfAbsent(articleDTO.getArticleId(), new ReentrantLock());
+        }catch (Exception e){
+            //Todo:处理异常
+            return;
+        }
         reentrantLock.lock();
+        System.out.println(articleStaticsLockPool.size());
         try {
             String articleId = articleDTO.getArticleId();
 
@@ -127,15 +135,20 @@ public class ArticleServiceImpl implements ArticleService{
                             .setArticleBookmarkCount(newBookmarkCount)
             );
             articleMapper.updateById(article);
-        }
-        finally{
+        }finally{
             reentrantLock.unlock();
         }
     }
 
     @Override
     public void updateArticleBookmarkCount(String articleId, int bookmarkCountChange) {
-        ReentrantLock reentrantLock = articleStaticsLockMap.computeIfAbsent(articleId, k -> new ReentrantLock());
+        ReentrantLock reentrantLock;
+        try {
+            reentrantLock = articleStaticsLockPool.getIfAbsent(articleId, new ReentrantLock());
+        }catch (Exception e){
+            //Todo:处理异常
+            return;
+        }
         reentrantLock.lock();
         try {
             Article article = articleMapper.selectById(articleId);

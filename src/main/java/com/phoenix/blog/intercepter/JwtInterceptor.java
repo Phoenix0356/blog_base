@@ -39,7 +39,6 @@ public class JwtInterceptor implements HandlerInterceptor {
             }
         }else {
             throw new JwtValidatingException("Please login");
-
         }
         return HandlerInterceptor.super.preHandle(request, response, handler);
     }

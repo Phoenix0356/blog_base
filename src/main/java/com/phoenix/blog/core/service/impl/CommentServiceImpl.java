@@ -11,7 +11,6 @@ import com.phoenix.blog.model.vo.CommentVO;
 import com.phoenix.blog.util.DataUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.List;

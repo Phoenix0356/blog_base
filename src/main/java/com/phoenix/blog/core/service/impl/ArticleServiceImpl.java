@@ -14,9 +14,6 @@ import com.phoenix.blog.model.vo.ArticleVO;
 import com.phoenix.blog.util.DataUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import sun.misc.Unsafe;
-
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;

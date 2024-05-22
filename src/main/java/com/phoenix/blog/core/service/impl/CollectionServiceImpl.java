@@ -30,26 +30,22 @@ public class CollectionServiceImpl implements CollectionService {
     private final ArticleService articleService;
 
     @Override
-    @Transactional
     public List<ArticleVO> getAllArticleList(String collectionId) {
         return collectionMapper.selectCollectionArticleList(collectionId);
     }
 
     @Override
-    @Transactional
     public CollectionVO getCollection(String collectionId) {
         Collection collection = collectionMapper.selectById(collectionId);
         return CollectionVO.buildVo(collection);
     }
 
     @Override
-    @Transactional
     public List<CollectionVO> getAllCollections(String username) {
         return collectionMapper.selectCollectionsByUsername(username);
     }
 
     @Override
-    @Transactional
     public void saveCollection(CollectionDTO collectionDTO, String userId) {
         Collection collection = new Collection();
 
@@ -72,7 +68,6 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
-    @Transactional
     public void saveArticleIntoCollection(CollectionAddDTO collectionAddDTO, String userId) {
         Collection collection = collectionMapper.selectOne(new QueryWrapper<Collection>()
                 .eq("collection_user_id",userId)
@@ -94,7 +89,6 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
-    @Transactional
     public void saveNoteIntoArticle(String collectionId, ArticleNoteDTO articleNoteDTO) {
         if (DataUtil.isEmptyData(articleNoteDTO.getArticleNote())){
             articleNoteDTO.setArticleNote(CommonConstant.EMPTY_CONTENT);
@@ -105,7 +99,6 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
-    @Transactional
     public void updateCollection(CollectionDTO collectionDTO) {
         Collection collection = collectionMapper.selectById(collectionDTO.getCollectionId());
         if (collection == null){
@@ -121,7 +114,6 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
-    @Transactional
     public void deleteArticleFromCollect(String collectionId, String articleId) {
         //Todo:线程不安全
 //        Article article = articleMapper.selectById(articleId);
@@ -133,7 +125,6 @@ public class CollectionServiceImpl implements CollectionService {
     }
 
     @Override
-    @Transactional
     public void deleteCollectionById(String collectionId) {
         collectionMapper.deleteById(collectionId);
     }

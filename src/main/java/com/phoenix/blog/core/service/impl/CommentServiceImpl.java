@@ -23,7 +23,6 @@ public class CommentServiceImpl implements CommentService{
     private final CommentMapper commentMapper;
 
     @Override
-    @Transactional
     public CommentVO getCommentById(String commentId) {
         if (DataUtil.isEmptyData(commentId)){
             throw  new InvalidateArgumentException();
@@ -39,7 +38,6 @@ public class CommentServiceImpl implements CommentService{
     }
 
     @Override
-    @Transactional
     public List<CommentVO> getCommentArticleList(String articleId){
         if (DataUtil.isEmptyData(articleId)){
             throw new InvalidateArgumentException();
@@ -48,7 +46,6 @@ public class CommentServiceImpl implements CommentService{
     }
 
     @Override
-    @Transactional
     public CommentVO saveComment(CommentDTO commentDTO){
         if (commentDTO.getCommentContent() == null){
             throw new CommentFormatException();
@@ -65,7 +62,6 @@ public class CommentServiceImpl implements CommentService{
     }
 
     @Override
-    @Transactional
     public CommentVO updateComment(CommentDTO commentDTO) {
         String commentId = commentDTO.getCommentId();
         if (DataUtil.isEmptyData(commentId)) throw new InvalidateArgumentException();
@@ -84,7 +80,6 @@ public class CommentServiceImpl implements CommentService{
     }
 
     @Override
-    @Transactional
     public void deleteComment(String commentId) {
         if (DataUtil.isEmptyData(commentId)) throw new InvalidateArgumentException();
 

@@ -19,21 +19,18 @@ public class ReplyServiceImpl implements ReplyService {
 
 
     @Override
-    @Transactional
     public ReplyVO getReplyById(String replyId) {
         Reply reply = replyMapper.selectById(replyId);
         return ReplyVO.buildVO(reply);
     }
 
     @Override
-    @Transactional
     public ReplyVO getCommentReplyList(String commentId) {
 
         return null;
     }
 
     @Override
-    @Transactional
     public void saveReply(ReplyDTO replyDTO) {
         Reply reply = new Reply();
         DataUtil.setFields(reply,replyDTO,()->{
@@ -47,7 +44,6 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    @Transactional
     public void updateReply(ReplyDTO replyDTO) {
         Reply reply = new Reply();
         DataUtil.setFields(reply,replyDTO,()->{
@@ -59,7 +55,6 @@ public class ReplyServiceImpl implements ReplyService {
     }
 
     @Override
-    @Transactional
     public void deleteReply(String replyId) {
         replyMapper.deleteById(replyId);
     }

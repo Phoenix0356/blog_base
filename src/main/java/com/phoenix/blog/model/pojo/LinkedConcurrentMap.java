@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 //Todo:优化掉synchronized
 public class LinkedConcurrentMap<T,V> {
-    static final int DEFAULT_CAPACITY = 5;
+    static final int DEFAULT_CAPACITY = 20;
     private final ConcurrentHashMap<T,Element<T,V>> concurrentHashMap;
     private final DoubleLinkedList<T,V> doubleLinkedList;
     int capacity;
@@ -62,13 +62,12 @@ public class LinkedConcurrentMap<T,V> {
         if (doubleLinkedList.size() >= capacity  ) {
             T key = doubleLinkedList.deleteFirst();
             concurrentHashMap.remove(key);
-            System.out.println(key);
         }
     }
 
     static class DoubleLinkedList<T,V>{
 
-        //placeholder nodes, spare me from judging null
+        //placeholder nodes
         Element<T,V> fakeHead;
         Element<T,V> fakeTail;
         private int size;
@@ -89,6 +88,7 @@ public class LinkedConcurrentMap<T,V> {
 
                 fakeTail.pre.next = element;
                 fakeTail.pre = element;
+
                 size++;
 
             }else {

@@ -15,22 +15,24 @@ import com.phoenix.blog.util.DataUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sun.misc.Unsafe;
 
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
+
+
 
 @Service
 @RequiredArgsConstructor
 public class ArticleServiceImpl implements ArticleService{
 
     final ArticleMapper articleMapper;
-    private final LinkedConcurrentMap<String,ReentrantLock> articleStaticsLockPool = new LinkedConcurrentMap<>();
+    static final LinkedConcurrentMap<String,ReentrantLock> articleStaticsLockPool = new LinkedConcurrentMap<>();
 
     @Override
-    @Transactional
     public ArticleVO getArticleById(String articleId) {
 
         if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
@@ -43,7 +45,6 @@ public class ArticleServiceImpl implements ArticleService{
     }
 
     @Override
-    @Transactional
     public List<ArticleVO> getArticleAll(int sortStrategy) {
         List<ArticleVO> articleVOList = articleMapper.selectArticleWithPublisherList();
 
@@ -62,13 +63,11 @@ public class ArticleServiceImpl implements ArticleService{
     }
 
     @Override
-    @Transactional
     public List<ArticleVO> getArticleUserList(String userId) {
         return articleMapper.selectUserArticleList(userId);
     }
 
     @Override
-    @Transactional
     public void SaveArticleByUser(ArticleDTO articleDTO) {
         Article article = new Article();
 
@@ -91,7 +90,6 @@ public class ArticleServiceImpl implements ArticleService{
     }
 
     @Override
-    @Transactional
     public void updateArticleContent(ArticleDTO articleDTO) {
         String articleId = articleDTO.getArticleId();
 
@@ -116,8 +114,8 @@ public class ArticleServiceImpl implements ArticleService{
             //Todo:处理异常
             return;
         }
+        LockSupport.unpark(Thread.currentThread());
         reentrantLock.lock();
-        System.out.println(articleStaticsLockPool.size());
         try {
             String articleId = articleDTO.getArticleId();
 
@@ -160,7 +158,6 @@ public class ArticleServiceImpl implements ArticleService{
     }
 
     @Override
-    @Transactional
     public void deleteArticleById(String articleId) {
         if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
 

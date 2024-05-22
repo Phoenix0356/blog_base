@@ -47,7 +47,6 @@ public class UserServiceImpl implements UserService {
     final JwtConfig jwtConfig;
 
     @Override
-    @Transactional
     public UserVO getUserById(String userId) {
         if (DataUtil.isEmptyData(userId)) throw new InvalidateArgumentException();
         User user = userMapper.selectById(userId);
@@ -59,7 +58,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public UserVO getUserByUsername(String username){
         if (DataUtil.isEmptyData(username)) throw new InvalidateArgumentException();
 
@@ -72,7 +70,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public UserVO updateUser(UserDTO userDTO,String userId) {
         if (DataUtil.isEmptyData(userId)) throw new InvalidateArgumentException();
 
@@ -93,7 +90,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public UserVO register(UserRegisterDTO userRegisterDTO) {
         BCryptPasswordEncoder passwordEncoder = SecurityUtil.getPasswordEncoder();
         String username = userRegisterDTO.getUsername();
@@ -127,7 +123,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public UserVO login(UserLoginDTO userLoginDTO) {
 
         BCryptPasswordEncoder passwordEncoder = SecurityUtil.getPasswordEncoder();
@@ -157,7 +152,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public void logout(String jwtId, String userId, Date jwtExpirationTime) {
         long expTime = Math.max(jwtExpirationTime.getTime()-System.currentTimeMillis(),0);
         stringRedisTemplate.opsForValue().set(jwtId,"",expTime/1000, TimeUnit.SECONDS);

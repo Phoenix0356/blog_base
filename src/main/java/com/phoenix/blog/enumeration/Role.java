@@ -1,5 +1,6 @@
 package com.phoenix.blog.enumeration;
 
+import com.phoenix.blog.exceptions.clientException.EnumTypeNotFoundException;
 import lombok.Getter;
 
 @Getter
@@ -27,6 +28,6 @@ public enum Role {
                 return role.getLevel();
             }
         }
-        return -1;
+        throw new EnumTypeNotFoundException();
     }
 }

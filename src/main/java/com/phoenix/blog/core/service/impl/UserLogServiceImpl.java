@@ -5,6 +5,7 @@ import com.phoenix.blog.core.service.UserLogService;
 import com.phoenix.blog.model.entity.User;
 import com.phoenix.blog.model.entity.UserLog;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,7 @@ import java.sql.Timestamp;
 
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserLogServiceImpl implements UserLogService {
 
     final UserLogMapper userLogMapper;

@@ -3,12 +3,16 @@ package com.phoenix.blog.core.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.phoenix.blog.constant.SortConstant;
 import com.phoenix.blog.core.mapper.ArticleMapper;
+import com.phoenix.blog.core.mapper.CommentMapper;
 import com.phoenix.blog.core.service.ArticleService;
+import com.phoenix.blog.exceptions.serverException.LockPoolException;
 import com.phoenix.blog.model.dto.ArticleDTO;
 import com.phoenix.blog.model.entity.Article;
 import com.phoenix.blog.exceptions.clientException.ArticleFormatException;
 import com.phoenix.blog.exceptions.clientException.ArticleNotFoundException;
 import com.phoenix.blog.exceptions.clientException.InvalidateArgumentException;
+import com.phoenix.blog.model.entity.ArticleMessage;
+import com.phoenix.blog.model.entity.Comment;
 import com.phoenix.blog.model.pojo.LinkedConcurrentMap;
 import com.phoenix.blog.model.vo.ArticleVO;
 import com.phoenix.blog.util.DataUtil;
@@ -27,6 +31,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ArticleServiceImpl implements ArticleService{
 
     final ArticleMapper articleMapper;
+    final CommentMapper commentMapper;
+    final MessageServiceImpl messageService;
     static final LinkedConcurrentMap<String,ReentrantLock> articleStaticsLockPool = new LinkedConcurrentMap<>();
 
     @Override
@@ -107,16 +113,16 @@ public class ArticleServiceImpl implements ArticleService{
         ReentrantLock reentrantLock;
         try {
             reentrantLock = articleStaticsLockPool.getIfAbsent(articleDTO.getArticleId(), new ReentrantLock());
-        }catch (Exception e){
-            //Todo:处理异常
+        }catch (LockPoolException lockPoolException){
+            //TODO:记录日志
             return;
         }
-        LockSupport.unpark(Thread.currentThread());
         reentrantLock.lock();
         try {
             String articleId = articleDTO.getArticleId();
 
             if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
+
 
             Article article = articleMapper.selectById(articleId);
             if (article == null) throw new ArticleNotFoundException();
@@ -130,6 +136,7 @@ public class ArticleServiceImpl implements ArticleService{
                             .setArticleBookmarkCount(newBookmarkCount)
             );
             articleMapper.updateById(article);
+
         }finally{
             reentrantLock.unlock();
         }
@@ -141,7 +148,7 @@ public class ArticleServiceImpl implements ArticleService{
         try {
             reentrantLock = articleStaticsLockPool.getIfAbsent(articleId, new ReentrantLock());
         }catch (Exception e){
-            //Todo:处理异常
+            //TODO:记录日志
             return;
         }
         reentrantLock.lock();
@@ -160,7 +167,7 @@ public class ArticleServiceImpl implements ArticleService{
 
         Article article = articleMapper.selectById(articleId);
         if (article == null) throw new ArticleNotFoundException();
-
+        commentMapper.delete(new QueryWrapper<Comment>().eq("comment_article_id",articleId));
         articleMapper.delete(new QueryWrapper<Article>().eq("article_id",articleId));
     }
 

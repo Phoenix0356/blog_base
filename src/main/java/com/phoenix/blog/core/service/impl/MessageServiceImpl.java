@@ -1,5 +1,6 @@
 package com.phoenix.blog.core.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.phoenix.blog.core.mapper.ArticleMapper;
 import com.phoenix.blog.core.mapper.MessageMapper;
 import com.phoenix.blog.core.mapper.UserMapper;
@@ -15,7 +16,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -40,20 +43,33 @@ public class MessageServiceImpl implements MessageService{
 
     @Override
     @Async("asyncServiceExecutor")
-    public void saveMessage(ArticleMessageDTO articleMessageDTO, String producerId) {
-        ArticleMessage articleMessage = new ArticleMessage();
-
-        Article article = articleMapper.selectById(articleMessageDTO.getMessageRelatedArticleId());
+    public void saveMessage(String messageRelatedArticleId,MessageType messageType, String producerId) {
+        Article article = articleMapper.selectById(messageRelatedArticleId);
         User user = userMapper.selectById(article.getArticleUserId());
 
-        articleMessage.setMessageProducerId(producerId)
-                .setMessageReceiverId(user.getUserId())
-                .setMessageRelatedArticleId(articleMessageDTO.getMessageRelatedArticleId())
-                .setMessageType(MessageType.valueOf(articleMessageDTO.getMessageType()))
-                .setMessageIsPulled(false)
-                .setMessageGenerateTime(new Timestamp(System.currentTimeMillis()));
+        ArticleMessage articleMessage = messageMapper.selectOne(new QueryWrapper<ArticleMessage>()
+                .eq("message_producer_id",producerId)
+                .eq("message_receiver_id",article.getArticleUserId())
+                .eq("message_type",messageType)
+                .orderByDesc("message_generate_time")
+                .last("Limit 1")
+        );
 
-        messageMapper.insert(articleMessage);
+        if (articleMessage == null||articleMessage.isMessageIsPulled()) {
+            articleMessage = new ArticleMessage();
+            articleMessage.setMessageProducerId(producerId)
+                    .setMessageReceiverId(user.getUserId())
+                    .setMessageRelatedArticleId(messageRelatedArticleId)
+                    .setMessageType(messageType)
+                    .setMessageIsPulled(false)
+                    .setMessageGenerateTime(new Timestamp(System.currentTimeMillis()));
+            messageMapper.insert(articleMessage);
+        }else {
+            articleMessage.setMessageGenerateTime(new Timestamp(System.currentTimeMillis()));
+            messageMapper.updateById(articleMessage);
+        }
+
+
     }
 
 

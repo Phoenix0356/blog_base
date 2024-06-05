@@ -5,6 +5,7 @@ import com.phoenix.blog.constant.CommonConstant;
 import com.phoenix.blog.core.mapper.CollectionMapper;
 import com.phoenix.blog.core.service.ArticleService;
 import com.phoenix.blog.core.service.CollectionService;
+import com.phoenix.blog.enumeration.MessageType;
 import com.phoenix.blog.exceptions.clientException.CollectionContainsException;
 import com.phoenix.blog.exceptions.clientException.CollectionExistException;
 import com.phoenix.blog.exceptions.clientException.CollectionNotFoundException;
@@ -115,11 +116,7 @@ public class CollectionServiceImpl implements CollectionService {
     @Override
     public void deleteArticleFromCollect(String collectionId, String articleId) {
         //Todo:线程不安全
-//        Article article = articleMapper.selectById(articleId);
-//        article.setArticleBookmarkCount(article.getArticleBookmarkCount()-1);
-//        articleMapper.updateById(article);
-
-        articleService.updateArticleBookmarkCount(articleId,-1);
+        articleService.deleteArticleBookmarkCount(articleId);
         collectionMapper.deleteArticleFromCollection(collectionId,articleId);
     }
 

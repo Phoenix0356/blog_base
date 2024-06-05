@@ -73,8 +73,9 @@ public class ArticleController {
 
     //更新阅读和点赞数
     @PutMapping("/update/statics")
-    @AuthorizationRequired(Role.VISITOR)
+    @AuthorizationRequired(Role.MEMBER)
     public ResultVO updateArticleStatics(@RequestBody ArticleDTO articleDTO){
+
         articleService.updateArticleStatics(articleDTO);
         return ResultVO.success("Article save success");
     }

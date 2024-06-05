@@ -1,5 +1,6 @@
 package com.phoenix.blog.core.service;
 
+import com.phoenix.blog.enumeration.MessageType;
 import com.phoenix.blog.model.dto.ArticleMessageDTO;
 import com.phoenix.blog.model.vo.ArticleMessageVO;
 
@@ -9,5 +10,5 @@ public interface MessageService {
     ArticleMessageVO getMessageByMessageId(String messageId);
     List<ArticleMessageVO> getMessageListByReceiverId(String receiverId);
 
-    void saveMessage(ArticleMessageDTO articleMessageDTO, String producerId);
+    void saveMessage(String messageRelatedArticleId, MessageType messageType, String producerId);
 }

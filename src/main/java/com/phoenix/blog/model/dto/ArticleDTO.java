@@ -14,4 +14,5 @@ public class ArticleDTO {
     int articleReadCount;
     int articleUpvoteCountChange;
     int articleBookmarkCountChange;
+    int articleMessageType;
 }

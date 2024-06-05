@@ -1,5 +1,6 @@
 package com.phoenix.blog.core.service;
 
+import com.phoenix.blog.interfaces.FieldsInjector;
 import com.phoenix.blog.model.dto.ArticleDTO;
 import com.phoenix.blog.model.vo.ArticleVO;
 
@@ -14,6 +15,6 @@ public interface ArticleService {
     void SaveArticleByUser(ArticleDTO articleDTO);
     void updateArticleContent(ArticleDTO articleDTO);
     void updateArticleStatics(ArticleDTO articleDTO);
-    void updateArticleBookmarkCount(String articleId, int bookmarkCountChange);
+    void deleteArticleBookmarkCount(String articleId);
     void deleteArticleById(String articleId);
 }

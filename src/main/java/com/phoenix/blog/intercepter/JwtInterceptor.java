@@ -27,18 +27,17 @@ public class JwtInterceptor implements HandlerInterceptor {
         if (!DataUtil.isEmptyData(token) && token.startsWith("Bearer ")){
             token = token.substring(7);
             try {
-
                 Claims claims = JwtUtil.isValidateToken(token,jwtConfig.secret);
                 TokenContext.setClaims(claims);
 
                 if (JwtUtil.isBlackListedToken(stringRedisTemplate,claims.getId())){
-                    throw new JwtValidatingException("jwt in blacklist");
+                    throw new JwtValidatingException("你的令牌令牌已失效");
                 }
             }catch (JwtException je){
-                throw new JwtValidatingException();
+                throw new JwtValidatingException("请重新登录");
             }
         }else {
-            throw new JwtValidatingException("Please login");
+            throw new JwtValidatingException("请登录");
         }
         return HandlerInterceptor.super.preHandle(request, response, handler);
     }

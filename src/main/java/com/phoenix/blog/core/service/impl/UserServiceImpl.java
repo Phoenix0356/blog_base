@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.selectById(userId);
 
         if (user == null) {
-            throw new UserNotFoundException();
+            throw new UsernameOrPasswordErrorException();
         }
         return UserVO.BuildVO(user,null);
     }
@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("username",username));
 
         if (user == null){
-            throw new UserNotFoundException();
+            throw new UsernameOrPasswordErrorException();
         }
         return UserVO.BuildVO(user,null);
     }
@@ -74,7 +74,7 @@ public class UserServiceImpl implements UserService {
 
         User user = userMapper.selectById(userId);
 
-        if (user == null) throw new UserNotFoundException();
+        if (user == null) throw new UsernameOrPasswordErrorException();
 
         String newUsername = userDTO.getUsername();
         DataUtil.setFields(user,userDTO,()->
@@ -131,13 +131,13 @@ public class UserServiceImpl implements UserService {
 
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("username",username));
         if (user == null){
-            throw new UserNotFoundException();
+            throw new UsernameOrPasswordErrorException();
         }
         if (stringRedisTemplate.opsForValue().get(user.getUserId())!=null){
             throw new UserAlreadyLoginException();
         }
         if (!passwordEncoder.matches(password,user.getPassword())){
-            throw new PasswordErrorException();
+            throw new UsernameOrPasswordErrorException();
         }
 
         String token = JwtUtil.getJwt(user.getUserId(), user.getUserRole().name(),

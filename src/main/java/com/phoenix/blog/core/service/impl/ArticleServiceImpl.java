@@ -2,16 +2,18 @@ package com.phoenix.blog.core.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.phoenix.blog.constant.SortConstant;
+import com.phoenix.blog.context.TokenContext;
 import com.phoenix.blog.core.mapper.ArticleMapper;
 import com.phoenix.blog.core.mapper.CommentMapper;
 import com.phoenix.blog.core.service.ArticleService;
+import com.phoenix.blog.core.service.MessageService;
+import com.phoenix.blog.enumeration.MessageType;
 import com.phoenix.blog.exceptions.serverException.LockPoolException;
 import com.phoenix.blog.model.dto.ArticleDTO;
 import com.phoenix.blog.model.entity.Article;
 import com.phoenix.blog.exceptions.clientException.ArticleFormatException;
 import com.phoenix.blog.exceptions.clientException.ArticleNotFoundException;
 import com.phoenix.blog.exceptions.clientException.InvalidateArgumentException;
-import com.phoenix.blog.model.entity.ArticleMessage;
 import com.phoenix.blog.model.entity.Comment;
 import com.phoenix.blog.model.pojo.LinkedConcurrentMap;
 import com.phoenix.blog.model.vo.ArticleVO;
@@ -21,7 +23,6 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
 
 
@@ -32,7 +33,7 @@ public class ArticleServiceImpl implements ArticleService{
 
     final ArticleMapper articleMapper;
     final CommentMapper commentMapper;
-    final MessageServiceImpl messageService;
+    final MessageService messageService;
     static final LinkedConcurrentMap<String,ReentrantLock> articleStaticsLockPool = new LinkedConcurrentMap<>();
 
     @Override
@@ -123,27 +124,41 @@ public class ArticleServiceImpl implements ArticleService{
 
             if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
 
-
             Article article = articleMapper.selectById(articleId);
             if (article == null) throw new ArticleNotFoundException();
 
             int newUpvoteCount = article.getArticleUpvoteCount()+articleDTO.getArticleUpvoteCountChange();
             int newBookmarkCount = article.getArticleBookmarkCount()+articleDTO.getArticleBookmarkCountChange();
+            int messageType = articleDTO.getArticleMessageType();
 
-            DataUtil.setFields(article, articleDTO, () ->
-                    article.setArticleReadCount(article.getArticleReadCount()+1)
-                            .setArticleUpvoteCount(newUpvoteCount)
-                            .setArticleBookmarkCount(newBookmarkCount)
-            );
+            article.setArticleReadCount(article.getArticleReadCount()+1);
+
+            //判断是否被点赞
+            if (DataUtil.isOptionChosen(messageType, MessageType.UPVOTE.getTypeNum())){
+                article.setArticleUpvoteCount(newUpvoteCount);
+                messageService.saveMessage(articleId,MessageType.UPVOTE,TokenContext.getUserId());
+            }
+
+            //判断是否被收藏
+            if (DataUtil.isOptionChosen(messageType, MessageType.BOOKMARK.getTypeNum())){
+                article.setArticleBookmarkCount(newBookmarkCount);
+                messageService.saveMessage(articleId,MessageType.BOOKMARK,TokenContext.getUserId());
+            }
+
+            //判断是否被取消收藏
+            if (DataUtil.isOptionChosen(messageType, MessageType.BOOKMARK_CANCEL.getTypeNum())){
+                article.setArticleBookmarkCount(newBookmarkCount);
+                messageService.saveMessage(articleId,MessageType.BOOKMARK_CANCEL,TokenContext.getUserId());
+            }
+
             articleMapper.updateById(article);
-
         }finally{
             reentrantLock.unlock();
         }
     }
 
     @Override
-    public void updateArticleBookmarkCount(String articleId, int bookmarkCountChange) {
+    public void deleteArticleBookmarkCount(String articleId) {
         ReentrantLock reentrantLock;
         try {
             reentrantLock = articleStaticsLockPool.getIfAbsent(articleId, new ReentrantLock());
@@ -154,8 +169,9 @@ public class ArticleServiceImpl implements ArticleService{
         reentrantLock.lock();
         try {
             Article article = articleMapper.selectById(articleId);
-            article.setArticleBookmarkCount(article.getArticleBookmarkCount()+ bookmarkCountChange);
+            article.setArticleBookmarkCount(article.getArticleBookmarkCount()-1);
             articleMapper.updateById(article);
+            messageService.saveMessage(articleId, MessageType.BOOKMARK_CANCEL,TokenContext.getUserId());
         }finally {
             reentrantLock.unlock();
         }
@@ -164,7 +180,6 @@ public class ArticleServiceImpl implements ArticleService{
     @Override
     public void deleteArticleById(String articleId) {
         if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
-
         Article article = articleMapper.selectById(articleId);
         if (article == null) throw new ArticleNotFoundException();
         commentMapper.delete(new QueryWrapper<Comment>().eq("comment_article_id",articleId));

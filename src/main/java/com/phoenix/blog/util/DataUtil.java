@@ -20,4 +20,7 @@ public class DataUtil{
     public static <T,E> void setFields(T t, E e, FieldsInjector fieldsInjector){
         fieldsInjector.inject();
     }
+    public static boolean isOptionChosen(int input,int option){
+        return (input&option)>0;
+    }
 }

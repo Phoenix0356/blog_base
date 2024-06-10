@@ -4,7 +4,6 @@ import com.phoenix.blog.model.entity.Comment;
 import lombok.Builder;
 import lombok.Data;
 
-import java.sql.Timestamp;
 
 @Data
 @Builder
@@ -16,8 +15,6 @@ public class CommentVO {
 
     String username;
     String userAvatarURL;
-
-
 
     public static CommentVO buildVO(Comment comment){
         return CommentVO.builder()

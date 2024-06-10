@@ -5,7 +5,6 @@ import com.phoenix.blog.constant.CommonConstant;
 import com.phoenix.blog.core.mapper.CollectionMapper;
 import com.phoenix.blog.core.service.ArticleService;
 import com.phoenix.blog.core.service.CollectionService;
-import com.phoenix.blog.enumeration.MessageType;
 import com.phoenix.blog.exceptions.clientException.CollectionContainsException;
 import com.phoenix.blog.exceptions.clientException.CollectionExistException;
 import com.phoenix.blog.exceptions.clientException.CollectionNotFoundException;
@@ -47,23 +46,24 @@ public class CollectionServiceImpl implements CollectionService {
 
     @Override
     public void saveCollection(CollectionDTO collectionDTO, String userId) {
-        Collection collection = new Collection();
+
 
         String collectionName = collectionDTO.getCollectionName();
-        Map<String,Object> queryMap = new HashMap<>();
-        queryMap.put("collection_user_id",userId);
-        queryMap.put("collection_name",collectionName);
+        Collection collection = collectionMapper.selectOne(new QueryWrapper<Collection>()
+                .eq("collection_user_id",userId)
+                .eq("collection_name",collectionName)
+        );
 
-        if (!collectionMapper.selectByMap(queryMap).isEmpty()){
+        if (collection != null){
             throw new CollectionExistException();
         }
-        DataUtil.setFields(collection,collectionDTO,() ->
-            collection.setCollectionUserId(userId)
-                    .setCollectionName(collectionName)
-                    .setCollectionDescription(collectionDTO.getCollectionDescription())
-                    .setCollectionReviseTime(new Timestamp(System.currentTimeMillis()))
 
-        );
+        collection = new Collection();
+        collection.setCollectionUserId(userId)
+                .setCollectionName(collectionName)
+                .setCollectionDescription(collectionDTO.getCollectionDescription())
+                .setCollectionReviseTime(new Timestamp(System.currentTimeMillis())
+                );
         collectionMapper.insert(collection);
     }
 

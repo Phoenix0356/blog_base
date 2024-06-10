@@ -75,7 +75,6 @@ public class ArticleController {
     @PutMapping("/update/statics")
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO updateArticleStatics(@RequestBody ArticleDTO articleDTO){
-
         articleService.updateArticleStatics(articleDTO);
         return ResultVO.success("Article save success");
     }

@@ -16,6 +16,12 @@ public class LinkedConcurrentMap<T,V> {
         capacity = DEFAULT_CAPACITY;
     }
 
+    public LinkedConcurrentMap(int capacity){
+        concurrentHashMap = new ConcurrentHashMap<>();
+        doubleLinkedList = new DoubleLinkedList<>();
+        this.capacity = capacity;
+    }
+
     public synchronized V put(T key,V value) throws LockPoolException {
         Element<T,V> element;
 
@@ -67,7 +73,7 @@ public class LinkedConcurrentMap<T,V> {
 
     static class DoubleLinkedList<T,V>{
 
-        //placeholder nodes
+        //占位节点
         Element<T,V> fakeHead;
         Element<T,V> fakeTail;
         private int size;
@@ -76,6 +82,7 @@ public class LinkedConcurrentMap<T,V> {
             fakeHead = new Element<>();
             fakeTail = new Element<>();
             size = 0;
+
             fakeHead.next = fakeTail;
             fakeTail.pre = fakeHead;
         }

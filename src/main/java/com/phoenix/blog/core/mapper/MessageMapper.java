@@ -9,6 +9,7 @@ import java.util.List;
 
 @Mapper
 public interface MessageMapper extends BaseMapper<ArticleMessage> {
-
     List<ArticleMessageVO> getMessageList(String receiverId);
+
+    void savePulledMessage(String receiverId,String messageType);
 }

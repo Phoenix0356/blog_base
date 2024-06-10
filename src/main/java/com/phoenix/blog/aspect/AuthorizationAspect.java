@@ -25,22 +25,20 @@ public class AuthorizationAspect {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();
 
-        int requireRoleLevel = 0;
+        int requiredRoleLevel = 0;
         if (method.isAnnotationPresent(AuthorizationRequired.class)) {
             AuthorizationRequired authorizationRequired = method.getAnnotation(AuthorizationRequired.class);
-            requireRoleLevel = authorizationRequired.value().getLevel();
+            requiredRoleLevel = authorizationRequired.value().getLevel();
         }
 
         //接口要求权限为最低直接放行
-        if (requireRoleLevel == 0){
+        if (requiredRoleLevel == 0){
             return;
         }
         String userRole = TokenContext.getUserRole();
         int userRoleLevel = Role.getLevel(userRole);
-        if (userRoleLevel < requireRoleLevel) {
+        if (userRoleLevel < requiredRoleLevel) {
             throw new PermissionDeniedException();
         }
-
     }
-
 }

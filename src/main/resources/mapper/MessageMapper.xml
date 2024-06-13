@@ -10,7 +10,8 @@
                 INNER JOIN user u ON ma.message_producer_id = u.user_id
                 INNER JOIN article a on ma.message_related_article_id = a.article_id
         WHERE ma.message_receiver_id = #{receiverId}
-        ORDER BY ma.message_is_pulled DESC
+        ORDER BY ma.message_generate_time DESC
+        LIMIT 20
     </select>
 
     <update id="savePulledMessage" parameterType="string">

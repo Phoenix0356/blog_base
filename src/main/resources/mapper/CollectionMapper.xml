@@ -38,7 +38,7 @@
 
 
     <delete id="deleteArticleFromCollection" parameterType="string">
-        DELETE from collection_article_list cal
+        DELETE FROM collection_article_list cal
         WHERE cal.collection_id = #{collectionId} And cal.article_id = #{articleId}
     </delete>
 

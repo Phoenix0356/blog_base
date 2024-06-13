@@ -31,7 +31,7 @@ public class JwtInterceptor implements HandlerInterceptor {
                 TokenContext.setClaims(claims);
 
                 if (JwtUtil.isBlackListedToken(stringRedisTemplate,claims.getId())){
-                    throw new JwtValidatingException("你的令牌令牌已失效");
+                    throw new JwtValidatingException("你的令牌已失效");
                 }
             }catch (JwtException je){
                 throw new JwtValidatingException("请重新登录");

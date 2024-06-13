@@ -22,11 +22,8 @@ public class UserController {
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO getUser(){
         UserVO userVO;
-        try {
-            userVO = userService.getUserById(TokenContext.getUserId());
-        }finally {
-            TokenContext.removeClaims();
-        }
+        userVO = userService.getUserById(TokenContext.getUserId());
+
         return ResultVO.success("Get user info success",userVO);
     }
 

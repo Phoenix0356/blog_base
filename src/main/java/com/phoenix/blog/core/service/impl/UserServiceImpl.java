@@ -77,8 +77,8 @@ public class UserServiceImpl implements UserService {
         if (user == null) throw new UsernameOrPasswordErrorException();
 
         String newUsername = userDTO.getUsername();
-        DataUtil.setFields(user,userDTO,()->
-                user.setUsername(newUsername));
+
+        user.setUsername(newUsername);
 
         if (userMapper.selectOne(new QueryWrapper<User>().eq("username",newUsername))!=null){
             throw new UsernameExistException();
@@ -133,9 +133,11 @@ public class UserServiceImpl implements UserService {
         if (user == null){
             throw new UsernameOrPasswordErrorException();
         }
-        if (stringRedisTemplate.opsForValue().get(user.getUserId())!=null){
-            throw new UserAlreadyLoginException();
-        }
+
+//        if (stringRedisTemplate.opsForValue().get(user.getUserId())!=null){
+//            throw new UserAlreadyLoginException();
+//        }
+
         if (!passwordEncoder.matches(password,user.getPassword())){
             throw new UsernameOrPasswordErrorException();
         }

@@ -30,36 +30,23 @@ public class ArticleController {
     @AuthorizationRequired(Role.VISITOR)
     public ResultVO getArticleAll(@RequestParam("sortBy") int sortStrategy){
         List<ArticleVO> articleVOList;
-        try {
-            articleVOList = articleService.getArticleAll(sortStrategy);
-        }finally {
-            TokenContext.removeClaims();
-        }
+        articleVOList = articleService.getArticleAll(sortStrategy);
+
         return ResultVO.success("Articles load success",articleVOList);
     }
     @GetMapping("/list")
     @AuthorizationRequired(Role.WRITER)
     public ResultVO getUserArticleListById(){
         List<ArticleVO> articleVOList;
-        try {
-            articleVOList = articleService.getArticleUserList(TokenContext.getUserId());
-        }finally {
-            TokenContext.removeClaims();
-        }
-
+        articleVOList = articleService.getArticleUserList(TokenContext.getUserId());
         return ResultVO.success("User Articles load success",articleVOList);
     }
 
     @PostMapping("/save")
     @AuthorizationRequired(Role.WRITER)
     public ResultVO saveArticle(@RequestBody ArticleDTO articleDTO){
-        try {
-            articleDTO.setArticleUserId(TokenContext.getUserId());
-            articleService.SaveArticleByUser(articleDTO);
-        }finally {
-            TokenContext.removeClaims();
-        }
-
+        articleDTO.setArticleUserId(TokenContext.getUserId());
+        articleService.SaveArticleByUser(articleDTO);
         return ResultVO.success("Article save success");
     }
 

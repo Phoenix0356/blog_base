@@ -53,6 +53,7 @@ public class MessageServiceImpl implements MessageService{
             messageMapper.savePulledMessage(receiverId,MessageType.BOOKMARK.name());
             messageMapper.savePulledMessage(receiverId,MessageType.BOOKMARK_CANCEL.name());
         }
+
     }
 
     @Override

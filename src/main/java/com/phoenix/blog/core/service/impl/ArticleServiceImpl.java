@@ -19,6 +19,7 @@ import com.phoenix.blog.model.pojo.LinkedConcurrentMap;
 import com.phoenix.blog.model.vo.ArticleVO;
 import com.phoenix.blog.util.DataUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.Comparator;
@@ -45,6 +46,20 @@ public class ArticleServiceImpl implements ArticleService{
             throw new ArticleNotFoundException();
         }
 
+        //增加阅读量
+        ReentrantLock reentrantLock;
+        try {
+            reentrantLock = articleStaticsLockPool.getIfAbsent(articleId, new ReentrantLock());
+        }catch (LockPoolException lockPoolException){
+            //TODO:记录日志,处理异常
+            return null;
+        }
+        reentrantLock.lock();
+        try{
+            addArticleReadCount(articleId);
+        }finally {
+            reentrantLock.unlock();
+        }
         return articleVO;
     }
 
@@ -131,8 +146,6 @@ public class ArticleServiceImpl implements ArticleService{
             int newBookmarkCount = article.getArticleBookmarkCount()+articleDTO.getArticleBookmarkCountChange();
             int messageType = articleDTO.getArticleMessageType();
 
-            article.setArticleReadCount(article.getArticleReadCount()+1);
-
             //判断是否被点赞
             if (DataUtil.isOptionChosen(messageType, MessageType.UPVOTE.getTypeNum())){
                 article.setArticleUpvoteCount(newUpvoteCount);
@@ -185,6 +198,11 @@ public class ArticleServiceImpl implements ArticleService{
         commentMapper.delete(new QueryWrapper<Comment>().eq("comment_article_id",articleId));
         articleMapper.delete(new QueryWrapper<Article>().eq("article_id",articleId));
     }
-
+    @Async("asyncServiceExecutor")
+    protected void addArticleReadCount(String articleId){
+        Article article = articleMapper.selectById(articleId);
+        article.setArticleReadCount(article.getArticleReadCount()+1);
+        articleMapper.updateById(article);
+    }
 
 }

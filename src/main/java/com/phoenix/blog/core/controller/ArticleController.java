@@ -58,7 +58,7 @@ public class ArticleController {
         return ResultVO.success("Article save success");
     }
 
-    //更新阅读和点赞数
+    //更新点赞数和收藏数
     @PutMapping("/update/statics")
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO updateArticleStatics(@RequestBody ArticleDTO articleDTO){

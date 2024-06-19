@@ -1,5 +1,6 @@
 package com.phoenix.blog.model.vo;
 
+import com.phoenix.blog.enumeration.ResultType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -11,18 +12,20 @@ public class ResultVO {
     int result;
 
     public static ResultVO success(String message, Object object){
-        return new ResultVO(message,object,1);
+        return new ResultVO(message,object,ResultType.SUCCESS.getResultNum());
     }
     public static ResultVO success(String message){
-        return new ResultVO(message,null,1);
+        return new ResultVO(message,null,ResultType.SUCCESS.getResultNum());
     }
 
-
-    public static ResultVO error(String message, Object object, int statusCode){
-        return new ResultVO(message,object,0);
+    public static ResultVO error(String message, Object object){
+        return new ResultVO(message,object,ResultType.ERROR.getResultNum());
     }
 
     public static ResultVO error(String message){
-        return new ResultVO(message,null,0);
+        return new ResultVO(message,null,ResultType.ERROR.getResultNum());
+    }
+    public static ResultVO reLogin(String message){
+        return new ResultVO(message,null,ResultType.RE_LOGIN.getResultNum());
     }
 }

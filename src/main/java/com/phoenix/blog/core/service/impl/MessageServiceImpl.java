@@ -60,7 +60,12 @@ public class MessageServiceImpl implements MessageService{
     @Async("asyncServiceExecutor")
     public void saveMessage(String messageRelatedArticleId,MessageType messageType, String producerId) {
         Article article = articleMapper.selectById(messageRelatedArticleId);
-        User user = userMapper.selectById(article.getArticleUserId());
+        User receiveUser = userMapper.selectById(article.getArticleUserId());
+
+        //如果自己操作自己文章，直接返回
+        if (receiveUser.getUserId().equals(producerId)){
+            return;
+        }
 
         ArticleMessage articleMessage = messageMapper.selectOne(new QueryWrapper<ArticleMessage>()
                         .eq("message_producer_id",producerId)
@@ -74,7 +79,7 @@ public class MessageServiceImpl implements MessageService{
         if (articleMessage == null||articleMessage.isMessageIsPulled()) {
             articleMessage = new ArticleMessage();
             articleMessage.setMessageProducerId(producerId)
-                    .setMessageReceiverId(user.getUserId())
+                    .setMessageReceiverId(receiveUser.getUserId())
                     .setMessageRelatedArticleId(messageRelatedArticleId)
                     .setMessageType(messageType)
                     .setMessageIsPulled(false)
@@ -84,9 +89,5 @@ public class MessageServiceImpl implements MessageService{
             articleMessage.setMessageGenerateTime(new Timestamp(System.currentTimeMillis()));
             messageMapper.updateById(articleMessage);
         }
-
-
     }
-
-
 }

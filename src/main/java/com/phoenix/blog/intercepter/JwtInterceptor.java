@@ -1,6 +1,7 @@
 package com.phoenix.blog.intercepter;
 
 import com.phoenix.blog.config.JwtConfig;
+import com.phoenix.blog.constant.CommonConstant;
 import com.phoenix.blog.context.TokenContext;
 import com.phoenix.blog.exceptions.clientException.JwtValidatingException;
 import com.phoenix.blog.util.DataUtil;
@@ -34,7 +35,7 @@ public class JwtInterceptor implements HandlerInterceptor {
                     throw new JwtValidatingException("你的令牌已失效");
                 }
             }catch (JwtException je){
-                throw new JwtValidatingException("请重新登录");
+                throw new JwtValidatingException(CommonConstant.RE_LOGIN);
             }
         }else {
             throw new JwtValidatingException("请登录");

@@ -1,8 +1,10 @@
 package com.phoenix.blog.exceptions.clientException;
 
+import com.phoenix.blog.constant.RespMessageConstant;
+
 public class CollectionNotFoundException extends BaseException{
     public CollectionNotFoundException() {
-        super("Collection not found");
+        super(RespMessageConstant.COLLECTION_NOT_FOUND_ERROR);
     }
 
     public CollectionNotFoundException(String msg) {

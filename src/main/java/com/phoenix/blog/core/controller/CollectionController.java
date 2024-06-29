@@ -1,6 +1,7 @@
 package com.phoenix.blog.core.controller;
 
 import com.phoenix.blog.annotations.AuthorizationRequired;
+import com.phoenix.blog.constant.RespMessageConstant;
 import com.phoenix.blog.context.TokenContext;
 import com.phoenix.blog.core.service.CollectionService;
 import com.phoenix.blog.enumeration.Role;
@@ -26,22 +27,21 @@ public class CollectionController {
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO getCollection(@PathVariable String collectionId){
         CollectionVO collectionVO = collectionService.getCollection(collectionId);
-        return ResultVO.success("get collection success",collectionVO);
+        return ResultVO.success(RespMessageConstant.GET_SUCCESS,collectionVO);
     }
 
-    //Todo:使用路径变量
-    @GetMapping("/all")
+    @GetMapping("/all/{username}")
     @AuthorizationRequired(Role.MEMBER)
-    public ResultVO getAllCollection(@RequestParam String username){
+    public ResultVO getAllCollection(@PathVariable String username){
         List<CollectionVO> collectionVOList = collectionService.getAllCollections(username);
-        return ResultVO.success("get collections success",collectionVOList);
+        return ResultVO.success(RespMessageConstant.GET_SUCCESS,collectionVOList);
     }
 
     @GetMapping("/{collectionId}/articles")
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO getAllArticles(@PathVariable String collectionId){
         List<ArticleVO> allArticleList = collectionService.getAllArticleList(collectionId);
-        return ResultVO.success("load articles success",allArticleList);
+        return ResultVO.success(RespMessageConstant.GET_SUCCESS,allArticleList);
     }
 
     //添加文章
@@ -49,7 +49,7 @@ public class CollectionController {
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO saveArticleIntoCollection(@RequestBody CollectionAddDTO collectionAddDTO){
         collectionService.saveArticleIntoCollection(collectionAddDTO,TokenContext.getUserId());
-        return ResultVO.success("add article success");
+        return ResultVO.success(RespMessageConstant.SAVE_SUCCESS);
     }
 
     @PostMapping("/{collectionId}/article/remark")
@@ -57,7 +57,7 @@ public class CollectionController {
     public ResultVO saveRemarkIntoArticle(@PathVariable String collectionId,
                                           @RequestBody ArticleNoteDTO articleRemarkDTO){
         collectionService.saveNoteIntoArticle(collectionId,articleRemarkDTO);
-        return ResultVO.success("save remark success");
+        return ResultVO.success(RespMessageConstant.SAVE_SUCCESS);
     }
 
     //创建收藏夹
@@ -65,13 +65,13 @@ public class CollectionController {
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO saveCollection(@RequestBody CollectionDTO collectionDTO){
         collectionService.saveCollection(collectionDTO,TokenContext.getUserId());
-        return ResultVO.success("create collection success");
+        return ResultVO.success(RespMessageConstant.SAVE_SUCCESS);
     }
 
     @PutMapping("/update")
     public ResultVO updateCollection(@RequestBody CollectionDTO collectionDTO){
         collectionService.updateCollection(collectionDTO);
-        return ResultVO.success("update collection success");
+        return ResultVO.success(RespMessageConstant.UPDATE_SUCCESS);
     }
 
     @DeleteMapping("/delete/{collectionId}/{articleId}")
@@ -79,12 +79,12 @@ public class CollectionController {
     public ResultVO deleteArticleFromCollection(@PathVariable String collectionId,
                                                 @PathVariable String articleId){
         collectionService.deleteArticleFromCollect(collectionId,articleId);
-        return ResultVO.success("article delete success");
+        return ResultVO.success(RespMessageConstant.DELETE_SUCCESS);
     }
     @DeleteMapping("/delete/{collectionId}")
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO deleteCollection(@PathVariable String collectionId){
         collectionService.deleteCollectionById(collectionId);
-        return ResultVO.success("collection delete success");
+        return ResultVO.success(RespMessageConstant.DELETE_SUCCESS);
     }
 }

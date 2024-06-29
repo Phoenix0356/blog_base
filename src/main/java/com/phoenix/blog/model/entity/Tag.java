@@ -10,7 +10,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
-import java.sql.Time;
 import java.sql.Timestamp;
 
 @Data
@@ -26,6 +25,11 @@ public class Tag {
     @TableField("tag_content")
     private String tagContent;
 
-    @TableField("tag_add_time")
-    private Timestamp tagAddTime;
+    @TableField("tag_revise_time")
+    private Timestamp tagReviseTime;
+
+    @TableField("tag_create_user_id")
+    private String tagCreateUserId;
+
+
 }

@@ -46,8 +46,6 @@ public class CollectionServiceImpl implements CollectionService {
 
     @Override
     public void saveCollection(CollectionDTO collectionDTO, String userId) {
-
-
         String collectionName = collectionDTO.getCollectionName();
         Collection collection = collectionMapper.selectOne(new QueryWrapper<Collection>()
                 .eq("collection_user_id",userId)
@@ -109,7 +107,6 @@ public class CollectionServiceImpl implements CollectionService {
                 collection.setCollectionDescription(collectionDTO.getCollectionDescription())
                 .setCollectionName(collectionDTO.getCollectionName())
                 .setCollectionReviseTime(new Timestamp(System.currentTimeMillis())));
-        System.out.println(collection);
         collectionMapper.updateById(collection);
     }
 

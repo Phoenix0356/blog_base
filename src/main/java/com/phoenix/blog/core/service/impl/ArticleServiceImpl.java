@@ -1,6 +1,7 @@
 package com.phoenix.blog.core.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.phoenix.blog.constant.RespMessageConstant;
 import com.phoenix.blog.constant.SortConstant;
 import com.phoenix.blog.context.TokenContext;
 import com.phoenix.blog.core.mapper.ArticleMapper;
@@ -32,13 +33,14 @@ import java.util.concurrent.locks.ReentrantLock;
 @RequiredArgsConstructor
 public class ArticleServiceImpl implements ArticleService{
 
+    //todo 不要直接注入其他mapper,注入manager或者service
     final ArticleMapper articleMapper;
     final CommentMapper commentMapper;
     final MessageService messageService;
     static final LinkedConcurrentMap<String,ReentrantLock> articleStaticsLockPool = new LinkedConcurrentMap<>();
 
     @Override
-    public ArticleVO getArticleById(String articleId) {
+    public ArticleVO getArticleVOById(String articleId) {
 
         if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
         ArticleVO articleVO = articleMapper.selectArticleWithPublisher(articleId);
@@ -97,11 +99,11 @@ public class ArticleServiceImpl implements ArticleService{
                 .setArticleReviseTime(new Timestamp(System.currentTimeMillis())));
 
         if (DataUtil.isEmptyData(articleDTO.getArticleTitle())){
-            throw new ArticleFormatException("title is empty");
+            throw new ArticleFormatException(RespMessageConstant.ARTICLE_TITLE_EMPTY_ERROR);
         }
 
         if (DataUtil.isEmptyData(articleDTO.getArticleContent())){
-            throw new ArticleFormatException("content is empty");
+            throw new ArticleFormatException(RespMessageConstant.ARTICLE_CONTENT_EMPTY_ERROR);
         }
 
         articleMapper.insert(article);

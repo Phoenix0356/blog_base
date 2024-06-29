@@ -1,6 +1,7 @@
 package com.phoenix.blog.core.controller;
 
 import com.phoenix.blog.annotations.AuthorizationRequired;
+import com.phoenix.blog.constant.RespMessageConstant;
 import com.phoenix.blog.context.TokenContext;
 import com.phoenix.blog.core.service.ArticleService;
 import com.phoenix.blog.enumeration.Role;
@@ -22,24 +23,22 @@ public class ArticleController {
     @GetMapping("/get/{articleId}")
     @AuthorizationRequired(Role.VISITOR)
     public ResultVO getArticleById(@PathVariable String articleId){
-        ArticleVO articleVO = articleService.getArticleById(articleId);
-        return ResultVO.success("Article load success", articleVO);
+        ArticleVO articleVO = articleService.getArticleVOById(articleId);
+        return ResultVO.success(RespMessageConstant.GET_SUCCESS, articleVO);
     }
 
     @GetMapping("/get/all")
     @AuthorizationRequired(Role.VISITOR)
     public ResultVO getArticleAll(@RequestParam("sortBy") int sortStrategy){
-        List<ArticleVO> articleVOList;
-        articleVOList = articleService.getArticleAll(sortStrategy);
-
-        return ResultVO.success("Articles load success",articleVOList);
+        List<ArticleVO> articleVOList= articleService.getArticleAll(sortStrategy);
+        return ResultVO.success(RespMessageConstant.GET_SUCCESS,articleVOList);
     }
     @GetMapping("/list")
     @AuthorizationRequired(Role.WRITER)
     public ResultVO getUserArticleListById(){
         List<ArticleVO> articleVOList;
         articleVOList = articleService.getArticleUserList(TokenContext.getUserId());
-        return ResultVO.success("User Articles load success",articleVOList);
+        return ResultVO.success(RespMessageConstant.GET_SUCCESS,articleVOList);
     }
 
     @PostMapping("/save")
@@ -47,7 +46,7 @@ public class ArticleController {
     public ResultVO saveArticle(@RequestBody ArticleDTO articleDTO){
         articleDTO.setArticleUserId(TokenContext.getUserId());
         articleService.SaveArticleByUser(articleDTO);
-        return ResultVO.success("Article save success");
+        return ResultVO.success(RespMessageConstant.SAVE_SUCCESS);
     }
 
     //更新文章内容
@@ -55,7 +54,7 @@ public class ArticleController {
     @AuthorizationRequired(Role.WRITER)
     public ResultVO updateArticleContent(@RequestBody ArticleDTO articleDTO){
         articleService.updateArticleContent(articleDTO);
-        return ResultVO.success("Article save success");
+        return ResultVO.success(RespMessageConstant.UPDATE_SUCCESS);
     }
 
     //更新点赞数和收藏数
@@ -63,13 +62,13 @@ public class ArticleController {
     @AuthorizationRequired(Role.MEMBER)
     public ResultVO updateArticleStatics(@RequestBody ArticleDTO articleDTO){
         articleService.updateArticleStatics(articleDTO);
-        return ResultVO.success("Article save success");
+        return ResultVO.success(RespMessageConstant.UPDATE_SUCCESS);
     }
 
     @DeleteMapping("/delete/{articleId}")
     @AuthorizationRequired(Role.WRITER)
     public ResultVO deleteArticle(@PathVariable String articleId){
         articleService.deleteArticleById(articleId);
-        return ResultVO.success("Article delete success",null);
+        return ResultVO.success(RespMessageConstant.DELETE_SUCCESS);
     }
 }

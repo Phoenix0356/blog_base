@@ -20,7 +20,7 @@ public class TagController {
 
     final private TagService tagService;
 
-    @GetMapping("/get/all")
+    @GetMapping("/all")
     @AuthorizationRequired(Role.WRITER)
     public ResultVO getAllTagsList(){
         List<TagVO> tagVOList = tagService.getTagList();
@@ -41,10 +41,10 @@ public class TagController {
         return ResultVO.success(RespMessageConstant.SAVE_SUCCESS);
     }
 
-    @PostMapping("/add")
+    @PostMapping("/article/update")
     @AuthorizationRequired(Role.WRITER)
     public ResultVO addTagToArticle(@RequestBody ArticleAddTagDTO articleAddTagDTO){
-        tagService.addTagToArticle(articleAddTagDTO);
+        tagService.updateTagToArticle(articleAddTagDTO);
         return ResultVO.success(RespMessageConstant.SAVE_SUCCESS);
     }
 

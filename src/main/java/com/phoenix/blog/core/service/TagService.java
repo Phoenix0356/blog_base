@@ -13,7 +13,7 @@ public interface TagService {
 
     void saveTag(TagDTO tagDTO);
 
-    void addTagToArticle(ArticleAddTagDTO articleAddTagDTO);
+    void updateTagToArticle(ArticleAddTagDTO articleAddTagDTO);
 
     void updateTag(TagDTO tagDTO);
 

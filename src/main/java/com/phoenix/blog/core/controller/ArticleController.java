@@ -45,8 +45,8 @@ public class ArticleController {
     @AuthorizationRequired(Role.WRITER)
     public ResultVO saveArticle(@RequestBody ArticleDTO articleDTO){
         articleDTO.setArticleUserId(TokenContext.getUserId());
-        articleService.SaveArticleByUser(articleDTO);
-        return ResultVO.success(RespMessageConstant.SAVE_SUCCESS);
+        ArticleVO articleVO = articleService.SaveArticleByUser(articleDTO);
+        return ResultVO.success(RespMessageConstant.SAVE_SUCCESS,articleVO);
     }
 
     //更新文章内容

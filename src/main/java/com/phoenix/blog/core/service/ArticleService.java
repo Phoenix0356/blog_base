@@ -11,7 +11,7 @@ public interface ArticleService {
     ArticleVO getArticleVOById(String articleId);
     List<ArticleVO> getArticleAll(int sortStrategy);
     List<ArticleVO> getArticleUserList(String userId);
-    void SaveArticleByUser(ArticleDTO articleDTO);
+    ArticleVO SaveArticleByUser(ArticleDTO articleDTO);
     void updateArticleContent(ArticleDTO articleDTO);
     void updateArticleStatics(ArticleDTO articleDTO);
     void deleteArticleBookmarkCount(String articleId);

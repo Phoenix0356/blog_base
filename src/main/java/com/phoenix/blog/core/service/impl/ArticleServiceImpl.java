@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.phoenix.blog.constant.RespMessageConstant;
 import com.phoenix.blog.constant.SortConstant;
 import com.phoenix.blog.context.TokenContext;
+import com.phoenix.blog.core.manager.ArticleTagManager;
 import com.phoenix.blog.core.mapper.ArticleMapper;
 import com.phoenix.blog.core.mapper.CommentMapper;
 import com.phoenix.blog.core.service.ArticleService;
@@ -37,6 +38,7 @@ public class ArticleServiceImpl implements ArticleService{
     final ArticleMapper articleMapper;
     final CommentMapper commentMapper;
     final MessageService messageService;
+    final ArticleTagManager articleTagManager;
     static final LinkedConcurrentMap<String,ReentrantLock> articleStaticsLockPool = new LinkedConcurrentMap<>();
 
     @Override
@@ -89,7 +91,7 @@ public class ArticleServiceImpl implements ArticleService{
     }
 
     @Override
-    public void SaveArticleByUser(ArticleDTO articleDTO) {
+    public ArticleVO SaveArticleByUser(ArticleDTO articleDTO) {
         Article article = new Article();
 
         DataUtil.setFields(article,articleDTO,() ->
@@ -107,7 +109,7 @@ public class ArticleServiceImpl implements ArticleService{
         }
 
         articleMapper.insert(article);
-
+        return ArticleVO.buildVO(article);
     }
 
     @Override
@@ -198,6 +200,7 @@ public class ArticleServiceImpl implements ArticleService{
         Article article = articleMapper.selectById(articleId);
         if (article == null) throw new ArticleNotFoundException();
         commentMapper.delete(new QueryWrapper<Comment>().eq("comment_article_id",articleId));
+        articleTagManager.deleteBatch(articleTagManager.selectListByArticleId(articleId));
         articleMapper.delete(new QueryWrapper<Article>().eq("article_id",articleId));
     }
     @Async("asyncServiceExecutor")

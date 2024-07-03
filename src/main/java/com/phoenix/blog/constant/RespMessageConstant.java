@@ -22,6 +22,9 @@ public class RespMessageConstant {
     public final static String COLLECTION_ALREADY_EXISTS_ERROR = "收藏夹已存在！";
     public final static String COLLECTION_NOT_FOUND_ERROR = "收藏夹未找到！";
 
+    public final static String TAG_ALREADY_EXISTS_ERROR = "标签已存在！";
+    public final static String ARTICLE_CONTAINS_TAG_ERROR = "标签已经在文章中！";
+
 
 
 }

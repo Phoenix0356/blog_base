@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class ArticleManager {
     private final ArticleMapper articleMapper;
 
-    public Article getArticleById(String articleId){
+    public Article selectArticleById(String articleId){
         return articleMapper.selectById(articleId);
     }
 }

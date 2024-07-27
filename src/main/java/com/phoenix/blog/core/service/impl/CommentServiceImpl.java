@@ -50,12 +50,12 @@ public class CommentServiceImpl implements CommentService{
             throw new CommentFormatException();
         }
         Comment comment = new Comment();
-        DataUtil.setFields(comment,commentDTO,()->
-                comment.setCommentContent(commentDTO.getCommentContent())
-                        .setCommentArticleId(commentDTO.getCommentArticleId())
-                        .setCommentUserId(commentDTO.getCommentUserId())
-                        .setCommentReviseTime(new Timestamp(System.currentTimeMillis()))
-        );
+
+        comment.setCommentContent(commentDTO.getCommentContent())
+                .setCommentArticleId(commentDTO.getCommentArticleId())
+                .setCommentUserId(commentDTO.getCommentUserId())
+                .setCommentReviseTime(new Timestamp(System.currentTimeMillis()));
+
         commentMapper.insert(comment);
         return CommentVO.buildVO(comment);
     }
@@ -68,12 +68,8 @@ public class CommentServiceImpl implements CommentService{
         Comment comment = commentMapper.selectById(commentId);
 
         if (comment == null) throw new CommentNotFoundException();
-
-        DataUtil.setFields(comment,commentDTO,()->
-                comment.setCommentContent(commentDTO.getCommentContent())
-                        .setCommentReviseTime(new Timestamp(System.currentTimeMillis()))
-        );
-
+        comment.setCommentContent(commentDTO.getCommentContent())
+                .setCommentReviseTime(new Timestamp(System.currentTimeMillis()));
         commentMapper.updateById(comment);
         return CommentVO.buildVO(comment);
     }

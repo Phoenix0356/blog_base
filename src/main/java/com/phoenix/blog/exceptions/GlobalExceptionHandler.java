@@ -1,4 +1,4 @@
-package com.phoenix.blog.handler;
+package com.phoenix.blog.exceptions;
 
 import com.phoenix.blog.constant.CommonConstant;
 import com.phoenix.blog.exceptions.clientException.BaseException;

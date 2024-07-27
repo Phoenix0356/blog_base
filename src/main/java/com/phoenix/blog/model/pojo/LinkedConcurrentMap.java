@@ -1,6 +1,8 @@
 package com.phoenix.blog.model.pojo;
 
 import com.phoenix.blog.exceptions.serverException.LockPoolException;
+
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ConcurrentHashMap;
 
 //Todo:优化掉synchronized
@@ -22,40 +24,48 @@ public class LinkedConcurrentMap<T,V> {
         this.capacity = capacity;
     }
 
-    public synchronized V put(T key,V value) throws LockPoolException {
+    public synchronized V put(T key,Class<V> clazz){
         Element<T,V> element;
+        try {
+            V instance = clazz.getDeclaredConstructor().newInstance();
+            if (concurrentHashMap.containsKey(key)) {
+                element = concurrentHashMap.get(key);
+                doubleLinkedList.delete(element);
+                doubleLinkedList.addLast(element);
+                return instance;
+            }
 
-        if (concurrentHashMap.containsKey(key)) {
-            element = concurrentHashMap.get(key);
-            doubleLinkedList.delete(element);
+            element = new Element<>(key, instance);
+            concurrentHashMap.put(key, element);
             doubleLinkedList.addLast(element);
-            return value;
+
+            dropIfExceedCapacity();
+        }catch (LockPoolException | NoSuchMethodException |InvocationTargetException
+                | InstantiationException | IllegalAccessException e){
+            e.printStackTrace();
         }
-
-        element = new Element<>(key,value);
-        concurrentHashMap.put(key, element);
-        doubleLinkedList.addLast(element);
-
-        dropIfExceedCapacity();
-
-        return value;
+        return concurrentHashMap.get(key).val;
     }
 
-    public synchronized V getIfAbsent(T key,V valIfAbsent) throws LockPoolException {
+    public synchronized V getIfAbsent(T key,Class<V> clazz) {
         V v = get(key);
         if (v!=null){
             return v;
         }
-        v=put(key,valIfAbsent);
+        v=put(key,clazz);
         return v;
     }
 
-    public synchronized V get(T key) throws LockPoolException {
-        if (concurrentHashMap.containsKey(key)){
-            Element<T,V> element = concurrentHashMap.get(key);
-            doubleLinkedList.delete(element);
-            doubleLinkedList.addLast(element);
-            return element.val;
+    public synchronized V get(T key){
+        try {
+            if (concurrentHashMap.containsKey(key)) {
+                Element<T, V> element = concurrentHashMap.get(key);
+                doubleLinkedList.delete(element);
+                doubleLinkedList.addLast(element);
+                return element.val;
+            }
+        }catch (LockPoolException lockPoolException){
+            lockPoolException.printStackTrace();
         }
         return null;
     }

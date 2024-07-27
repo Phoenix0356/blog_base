@@ -5,7 +5,6 @@ import com.phoenix.blog.core.service.ReplyService;
 import com.phoenix.blog.model.dto.ReplyDTO;
 import com.phoenix.blog.model.entity.Reply;
 import com.phoenix.blog.model.vo.ReplyVO;
-import com.phoenix.blog.util.DataUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -32,12 +31,11 @@ public class ReplyServiceImpl implements ReplyService {
     @Override
     public void saveReply(ReplyDTO replyDTO) {
         Reply reply = new Reply();
-        DataUtil.setFields(reply,replyDTO,()->{
-            reply.setReplyUserName(replyDTO.getReplyUsername())
-                    .setReplyReceiverName(replyDTO.getReplyReceiverName())
-                    .setReplyContent(replyDTO.getReplyContent())
-                    .setReplyReviseTime(new Timestamp(System.currentTimeMillis()));
-        });
+
+        reply.setReplyUserName(replyDTO.getReplyUsername())
+                .setReplyReceiverName(replyDTO.getReplyReceiverName())
+                .setReplyContent(replyDTO.getReplyContent())
+                .setReplyReviseTime(new Timestamp(System.currentTimeMillis()));
 
         replyMapper.insert(reply);
     }
@@ -45,10 +43,9 @@ public class ReplyServiceImpl implements ReplyService {
     @Override
     public void updateReply(ReplyDTO replyDTO) {
         Reply reply = new Reply();
-        DataUtil.setFields(reply,replyDTO,()->{
-            reply.setReplyContent(replyDTO.getReplyContent())
-                    .setReplyReviseTime(new Timestamp(System.currentTimeMillis()));
-        });
+
+        reply.setReplyContent(replyDTO.getReplyContent())
+                .setReplyReviseTime(new Timestamp(System.currentTimeMillis()));
 
         replyMapper.updateById(reply);
     }

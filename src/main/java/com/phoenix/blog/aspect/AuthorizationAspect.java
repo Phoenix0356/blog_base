@@ -17,9 +17,9 @@ import java.lang.reflect.Method;
 @Component
 public class AuthorizationAspect {
     @Pointcut(value = "execution(* com.phoenix.blog.core.controller.*Controller.*(..))")
-    public void visitorRole(){
+    public void point(){
     }
-    @Before(value = "visitorRole()")
+    @Before(value = "point()")
     public void authorizeRole(JoinPoint joinPoint){
 
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();

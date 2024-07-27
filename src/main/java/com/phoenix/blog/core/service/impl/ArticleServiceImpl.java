@@ -1,33 +1,32 @@
 package com.phoenix.blog.core.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.phoenix.blog.cache.RedisCacheHandler;
 import com.phoenix.blog.constant.RespMessageConstant;
 import com.phoenix.blog.constant.SortConstant;
 import com.phoenix.blog.context.TokenContext;
 import com.phoenix.blog.core.manager.ArticleTagManager;
+import com.phoenix.blog.core.manager.CommentManager;
+import com.phoenix.blog.core.manager.UserManager;
 import com.phoenix.blog.core.mapper.ArticleMapper;
-import com.phoenix.blog.core.mapper.CommentMapper;
 import com.phoenix.blog.core.service.ArticleService;
 import com.phoenix.blog.core.service.MessageService;
 import com.phoenix.blog.enumeration.MessageType;
-import com.phoenix.blog.exceptions.serverException.LockPoolException;
+import com.phoenix.blog.exceptions.clientException.NotFoundException;
 import com.phoenix.blog.model.dto.ArticleDTO;
 import com.phoenix.blog.model.entity.Article;
 import com.phoenix.blog.exceptions.clientException.ArticleFormatException;
-import com.phoenix.blog.exceptions.clientException.ArticleNotFoundException;
 import com.phoenix.blog.exceptions.clientException.InvalidateArgumentException;
-import com.phoenix.blog.model.entity.Comment;
+import com.phoenix.blog.model.entity.User;
 import com.phoenix.blog.model.pojo.LinkedConcurrentMap;
 import com.phoenix.blog.model.vo.ArticleVO;
 import com.phoenix.blog.util.DataUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
-
 
 
 @Service
@@ -36,35 +35,39 @@ public class ArticleServiceImpl implements ArticleService{
 
     //todo 不要直接注入其他mapper,注入manager或者service
     final ArticleMapper articleMapper;
-    final CommentMapper commentMapper;
     final MessageService messageService;
+
     final ArticleTagManager articleTagManager;
+    final UserManager userManager;
+    final CommentManager commentManager;
+
+    final RedisCacheHandler redisCacheHandler;
     static final LinkedConcurrentMap<String,ReentrantLock> articleStaticsLockPool = new LinkedConcurrentMap<>();
 
     @Override
     public ArticleVO getArticleVOById(String articleId) {
-
         if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
-        ArticleVO articleVO = articleMapper.selectArticleWithPublisher(articleId);
-        if (articleVO == null){
-            throw new ArticleNotFoundException();
-        }
 
-        //增加阅读量
-        ReentrantLock reentrantLock;
-        try {
-            reentrantLock = articleStaticsLockPool.getIfAbsent(articleId, new ReentrantLock());
-        }catch (LockPoolException lockPoolException){
-            //TODO:记录日志,处理异常
-            return null;
-        }
+        Article article;
+        User user;
+
+        ReentrantLock reentrantLock = articleStaticsLockPool.getIfAbsent(articleId, ReentrantLock.class);
         reentrantLock.lock();
         try{
-            addArticleReadCount(articleId);
+            //获取缓存
+            article = (Article) redisCacheHandler.getCache(articleId,Article.class);
+            if (article == null){
+                article = articleMapper.selectById(articleId);
+                redisCacheHandler.setCache(articleId, article);
+            }
+            user = userManager.select(article.getArticleUserId());
+            //更新阅读量
+            article.setArticleReadCount(article.getArticleReadCount()+1);
+            articleMapper.updateById(article);
         }finally {
             reentrantLock.unlock();
         }
-        return articleVO;
+        return ArticleVO.buildVO(article,user);
     }
 
     @Override
@@ -94,11 +97,10 @@ public class ArticleServiceImpl implements ArticleService{
     public ArticleVO SaveArticleByUser(ArticleDTO articleDTO) {
         Article article = new Article();
 
-        DataUtil.setFields(article,articleDTO,() ->
-                article.setArticleUserId(articleDTO.getArticleUserId())
-                .setArticleTitle(articleDTO.getArticleTitle())
-                .setArticleContent(articleDTO.getArticleContent())
-                .setArticleReviseTime(new Timestamp(System.currentTimeMillis())));
+        article.setArticleUserId(articleDTO.getArticleUserId())
+        .setArticleTitle(articleDTO.getArticleTitle())
+        .setArticleContent(articleDTO.getArticleContent())
+        .setArticleReviseTime(new Timestamp(System.currentTimeMillis()));
 
         if (DataUtil.isEmptyData(articleDTO.getArticleTitle())){
             throw new ArticleFormatException(RespMessageConstant.ARTICLE_TITLE_EMPTY_ERROR);
@@ -109,34 +111,36 @@ public class ArticleServiceImpl implements ArticleService{
         }
 
         articleMapper.insert(article);
-        return ArticleVO.buildVO(article);
+
+        User user = userManager.select(article.getArticleUserId());
+        return ArticleVO.buildVO(article,user);
     }
 
     @Override
     public void updateArticleContent(ArticleDTO articleDTO) {
         String articleId = articleDTO.getArticleId();
-
         if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
 
-        Article article = articleMapper.selectById(articleId);
-        if (article == null) throw new ArticleNotFoundException();
+        ReentrantLock reentrantLock = articleStaticsLockPool.getIfAbsent(articleId, ReentrantLock.class);
+        reentrantLock.lock();
+        try {
+            redisCacheHandler.deleteCache(articleId);
 
-        DataUtil.setFields(article, articleDTO, () ->
-                article.setArticleTitle(articleDTO.getArticleTitle())
-                        .setArticleContent(articleDTO.getArticleContent())
-                        .setArticleReviseTime(new Timestamp(System.currentTimeMillis())));
-        articleMapper.updateById(article);
+            Article article = articleMapper.selectById(articleId);
+            if (article == null) throw new NotFoundException(RespMessageConstant.ARTICLE_NOT_FOUND_ERROR);
+
+            article.setArticleTitle(articleDTO.getArticleTitle())
+                    .setArticleContent(articleDTO.getArticleContent())
+                    .setArticleReviseTime(new Timestamp(System.currentTimeMillis()));
+            articleMapper.updateById(article);
+        }finally {
+            reentrantLock.unlock();
+        }
     }
 
     @Override
     public void updateArticleStatics(ArticleDTO articleDTO) {
-        ReentrantLock reentrantLock;
-        try {
-            reentrantLock = articleStaticsLockPool.getIfAbsent(articleDTO.getArticleId(), new ReentrantLock());
-        }catch (LockPoolException lockPoolException){
-            //TODO:记录日志
-            return;
-        }
+        ReentrantLock reentrantLock = articleStaticsLockPool.getIfAbsent(articleDTO.getArticleId(), ReentrantLock.class);
         reentrantLock.lock();
         try {
             String articleId = articleDTO.getArticleId();
@@ -144,7 +148,7 @@ public class ArticleServiceImpl implements ArticleService{
             if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
 
             Article article = articleMapper.selectById(articleId);
-            if (article == null) throw new ArticleNotFoundException();
+            if (article == null) throw new NotFoundException(RespMessageConstant.ARTICLE_NOT_FOUND_ERROR);
 
             int newUpvoteCount = article.getArticleUpvoteCount()+articleDTO.getArticleUpvoteCountChange();
             int newBookmarkCount = article.getArticleBookmarkCount()+articleDTO.getArticleBookmarkCountChange();
@@ -178,7 +182,7 @@ public class ArticleServiceImpl implements ArticleService{
     public void deleteArticleBookmarkCount(String articleId) {
         ReentrantLock reentrantLock;
         try {
-            reentrantLock = articleStaticsLockPool.getIfAbsent(articleId, new ReentrantLock());
+            reentrantLock = articleStaticsLockPool.getIfAbsent(articleId, ReentrantLock.class);
         }catch (Exception e){
             //TODO:记录日志
             return;
@@ -198,16 +202,9 @@ public class ArticleServiceImpl implements ArticleService{
     public void deleteArticleById(String articleId) {
         if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
         Article article = articleMapper.selectById(articleId);
-        if (article == null) throw new ArticleNotFoundException();
-        commentMapper.delete(new QueryWrapper<Comment>().eq("comment_article_id",articleId));
+        if (article == null) throw new NotFoundException(RespMessageConstant.ARTICLE_NOT_FOUND_ERROR);
+
         articleTagManager.deleteBatch(articleTagManager.selectListByArticleId(articleId));
         articleMapper.delete(new QueryWrapper<Article>().eq("article_id",articleId));
     }
-    @Async("asyncServiceExecutor")
-    protected void addArticleReadCount(String articleId){
-        Article article = articleMapper.selectById(articleId);
-        article.setArticleReadCount(article.getArticleReadCount()+1);
-        articleMapper.updateById(article);
-    }
-
 }

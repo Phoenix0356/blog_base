@@ -5,7 +5,6 @@ import com.phoenix.blog.context.TokenContext;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
@@ -16,10 +15,10 @@ import java.lang.reflect.Method;
 @Component
 public class CleanThreadAspect {
     @Pointcut(value = "execution(* com.phoenix.blog.core.controller.*Controller.*(..))")
-    public void clean() {
+    public void point() {
     }
 
-    @After(value = "clean()")
+    @After(value = "point()")
     public void cleanThreadLocal(JoinPoint joinPoint) {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();

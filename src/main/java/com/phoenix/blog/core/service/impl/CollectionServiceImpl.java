@@ -2,12 +2,11 @@ package com.phoenix.blog.core.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.phoenix.blog.constant.CommonConstant;
+import com.phoenix.blog.constant.RespMessageConstant;
 import com.phoenix.blog.core.mapper.CollectionMapper;
 import com.phoenix.blog.core.service.ArticleService;
 import com.phoenix.blog.core.service.CollectionService;
-import com.phoenix.blog.exceptions.clientException.CollectionContainsException;
-import com.phoenix.blog.exceptions.clientException.CollectionExistException;
-import com.phoenix.blog.exceptions.clientException.CollectionNotFoundException;
+import com.phoenix.blog.exceptions.clientException.*;
 import com.phoenix.blog.model.dto.ArticleNoteDTO;
 import com.phoenix.blog.model.dto.CollectionAddDTO;
 import com.phoenix.blog.model.dto.CollectionDTO;
@@ -76,7 +75,7 @@ public class CollectionServiceImpl implements CollectionService {
         String articleId = collectionAddDTO.getArticleId();
 
         if (collectionMapper.isArticleExistsInCollection(collectionId,articleId) == 1){
-            throw new CollectionContainsException();
+            throw new AlreadyContainsException(RespMessageConstant.COLLECTION_ALREADY_CONTAINS_ERROR);
         }
 
         Map<String,String> map = new HashMap<>();
@@ -100,13 +99,11 @@ public class CollectionServiceImpl implements CollectionService {
     public void updateCollection(CollectionDTO collectionDTO) {
         Collection collection = collectionMapper.selectById(collectionDTO.getCollectionId());
         if (collection == null){
-            throw new CollectionNotFoundException();
+            throw new NotFoundException(RespMessageConstant.COLLECTION_NOT_FOUND_ERROR);
         }
-
-        DataUtil.setFields(collection,collectionDTO,()->
-                collection.setCollectionDescription(collectionDTO.getCollectionDescription())
-                .setCollectionName(collectionDTO.getCollectionName())
-                .setCollectionReviseTime(new Timestamp(System.currentTimeMillis())));
+        collection.setCollectionDescription(collectionDTO.getCollectionDescription())
+        .setCollectionName(collectionDTO.getCollectionName())
+        .setCollectionReviseTime(new Timestamp(System.currentTimeMillis()));
         collectionMapper.updateById(collection);
     }
 

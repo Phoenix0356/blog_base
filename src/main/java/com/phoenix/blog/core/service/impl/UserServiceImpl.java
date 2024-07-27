@@ -5,7 +5,7 @@ import com.phoenix.blog.config.JwtConfig;
 import com.phoenix.blog.config.PictureConfig;
 import com.phoenix.blog.config.URLConfig;
 import com.phoenix.blog.constant.HttpConstant;
-import com.phoenix.blog.core.mapper.UserLogMapper;
+import com.phoenix.blog.constant.RespMessageConstant;
 import com.phoenix.blog.core.service.UserLogService;
 import com.phoenix.blog.exceptions.clientException.*;
 import com.phoenix.blog.model.dto.UserDTO;
@@ -33,16 +33,11 @@ import java.util.concurrent.TimeUnit;
 public class UserServiceImpl implements UserService {
 
     final UserLogService userLogService;
-
     final StringRedisTemplate stringRedisTemplate;
-
     final UserMapper userMapper;
-    final UserLogMapper userLogMapper;
 
     final URLConfig urlConfig;
-
     final PictureConfig pictureConfig;
-
     final JwtConfig jwtConfig;
 
     @Override
@@ -51,7 +46,7 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.selectById(userId);
 
         if (user == null) {
-            throw new UsernameOrPasswordErrorException();
+            throw new NotFoundException(RespMessageConstant.USER_NOT_FOUND_ERROR);
         }
         return UserVO.BuildVO(user,null);
     }
@@ -63,7 +58,7 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("username",username));
 
         if (user == null){
-            throw new UsernameOrPasswordErrorException();
+            throw new NotFoundException(RespMessageConstant.USER_NOT_FOUND_ERROR);
         }
         return UserVO.BuildVO(user,null);
     }
@@ -74,14 +69,14 @@ public class UserServiceImpl implements UserService {
 
         User user = userMapper.selectById(userId);
 
-        if (user == null) throw new UsernameOrPasswordErrorException();
+        if (user == null) throw new NotFoundException(RespMessageConstant.USER_NOT_FOUND_ERROR);
 
         String newUsername = userDTO.getUsername();
 
         user.setUsername(newUsername);
 
         if (userMapper.selectOne(new QueryWrapper<User>().eq("username",newUsername))!=null){
-            throw new UsernameExistException();
+            throw new AlreadyExistsException(RespMessageConstant.USERNAME_ALREADY_EXISTS_ERROR);
         }
         userMapper.updateById(user);
 
@@ -100,16 +95,16 @@ public class UserServiceImpl implements UserService {
                 +avatarName;
 
         if (userMapper.selectOne(new QueryWrapper<User>().eq("username",username))!=null){
-            throw new UsernameExistException();
+            throw new AlreadyExistsException(RespMessageConstant.USERNAME_ALREADY_EXISTS_ERROR);
         }
 
         User user = new User();
-        DataUtil.setFields(user, userRegisterDTO, () ->
-                user.setUsername(username)
-                .setPassword(passwordEncoder.encode(password))
-                .setUserRole(userRegisterDTO.getRole())
-                .setUserAvatarURL(avatarURL)
-                .setRegisterTime(new Timestamp(System.currentTimeMillis())));
+
+        user.setUsername(username)
+        .setPassword(passwordEncoder.encode(password))
+        .setUserRole(userRegisterDTO.getRole())
+        .setUserAvatarURL(avatarURL)
+        .setRegisterTime(new Timestamp(System.currentTimeMillis()));
 
         userMapper.insert(user);
         String token = JwtUtil.getJwt(user.getUserId(), user.getUserRole().name(),
@@ -131,15 +126,11 @@ public class UserServiceImpl implements UserService {
 
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("username",username));
         if (user == null){
-            throw new UsernameOrPasswordErrorException();
+            throw new NotFoundException(RespMessageConstant.USER_NOT_FOUND_ERROR);
         }
 
-//        if (stringRedisTemplate.opsForValue().get(user.getUserId())!=null){
-//            throw new UserAlreadyLoginException();
-//        }
-
         if (!passwordEncoder.matches(password,user.getPassword())){
-            throw new UsernameOrPasswordErrorException();
+            throw new UsernameOrPasswordErrorException(RespMessageConstant.USERNAME_OR_PASSWORD_ERROR);
         }
 
         String token = JwtUtil.getJwt(user.getUserId(), user.getUserRole().name(),

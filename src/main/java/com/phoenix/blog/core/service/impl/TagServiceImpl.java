@@ -54,7 +54,7 @@ public class TagServiceImpl implements TagService {
 
         String articleId = articleAddTagDTO.getArticleId();
 
-        Article article = articleManager.getArticleById(articleId);
+        Article article = articleManager.selectArticleById(articleId);
         if (!article.getArticleUserId().equals(TokenContext.getUserId())){
             throw new NotOwnerException(RespMessageConstant.ARTICLE_NOT_OWNER_ERROR);
         }

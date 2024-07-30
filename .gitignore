@@ -32,13 +32,9 @@ build/
 
 ### VS Code ###
 .vscode/
-
-/src/main/resources/application-pro.yml
-/src/main/resources/application.yml
-/src/main/resources/application-local.yml
-/src/main/resources/static/avatar/
-/src/main/resources/templates/
+/src/main/resources/
 
 /src/test/
 
-/src/main/resources/
+
+

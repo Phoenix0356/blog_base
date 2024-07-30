@@ -1,10 +1,10 @@
 package com.phoenix.blog.core.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.phoenix.blog.cache.RedisCacheHandler;
 import com.phoenix.blog.constant.RespMessageConstant;
 import com.phoenix.blog.constant.SortConstant;
 import com.phoenix.blog.context.TokenContext;
+import com.phoenix.blog.core.manager.ArticleManager;
 import com.phoenix.blog.core.manager.ArticleTagManager;
 import com.phoenix.blog.core.manager.CommentManager;
 import com.phoenix.blog.core.manager.UserManager;
@@ -33,15 +33,13 @@ import java.util.concurrent.locks.ReentrantLock;
 @RequiredArgsConstructor
 public class ArticleServiceImpl implements ArticleService{
 
-    //todo 不要直接注入其他mapper,注入manager或者service
     final ArticleMapper articleMapper;
     final MessageService messageService;
 
     final ArticleTagManager articleTagManager;
     final UserManager userManager;
     final CommentManager commentManager;
-
-    final RedisCacheHandler redisCacheHandler;
+    final ArticleManager articleManager;
     static final LinkedConcurrentMap<String,ReentrantLock> articleStaticsLockPool = new LinkedConcurrentMap<>();
 
     @Override
@@ -55,11 +53,7 @@ public class ArticleServiceImpl implements ArticleService{
         reentrantLock.lock();
         try{
             //获取缓存
-            article = (Article) redisCacheHandler.getCache(articleId,Article.class);
-            if (article == null){
-                article = articleMapper.selectById(articleId);
-                redisCacheHandler.setCache(articleId, article);
-            }
+            article = articleManager.selectArticleInCache(articleId);
             user = userManager.select(article.getArticleUserId());
             //更新阅读量
             article.setArticleReadCount(article.getArticleReadCount()+1);
@@ -124,8 +118,7 @@ public class ArticleServiceImpl implements ArticleService{
         ReentrantLock reentrantLock = articleStaticsLockPool.getIfAbsent(articleId, ReentrantLock.class);
         reentrantLock.lock();
         try {
-            redisCacheHandler.deleteCache(articleId);
-
+            articleManager.deleteArticleInCache(articleId);
             Article article = articleMapper.selectById(articleId);
             if (article == null) throw new NotFoundException(RespMessageConstant.ARTICLE_NOT_FOUND_ERROR);
 

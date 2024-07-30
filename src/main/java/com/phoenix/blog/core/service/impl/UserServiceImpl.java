@@ -6,6 +6,7 @@ import com.phoenix.blog.config.PictureConfig;
 import com.phoenix.blog.config.URLConfig;
 import com.phoenix.blog.constant.HttpConstant;
 import com.phoenix.blog.constant.RespMessageConstant;
+import com.phoenix.blog.core.manager.UserManager;
 import com.phoenix.blog.core.service.UserLogService;
 import com.phoenix.blog.exceptions.clientException.*;
 import com.phoenix.blog.model.dto.UserDTO;
@@ -20,21 +21,19 @@ import com.phoenix.blog.util.JwtUtil;
 import com.phoenix.blog.util.PictureUtil;
 import com.phoenix.blog.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     final UserLogService userLogService;
-    final StringRedisTemplate stringRedisTemplate;
     final UserMapper userMapper;
+    final UserManager userManager;
 
     final URLConfig urlConfig;
     final PictureConfig pictureConfig;
@@ -43,8 +42,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserVO getUserById(String userId) {
         if (DataUtil.isEmptyData(userId)) throw new InvalidateArgumentException();
-        User user = userMapper.selectById(userId);
 
+        User user = userManager.selectUserInCache(userId);
         if (user == null) {
             throw new NotFoundException(RespMessageConstant.USER_NOT_FOUND_ERROR);
         }
@@ -109,7 +108,7 @@ public class UserServiceImpl implements UserService {
         userMapper.insert(user);
         String token = JwtUtil.getJwt(user.getUserId(), user.getUserRole().name(),
                 jwtConfig.secret, jwtConfig.expiration);
-        stringRedisTemplate.opsForValue().set(user.getUserId(),"",jwtConfig.expiration,TimeUnit.SECONDS);
+        userManager.setIntoCache(user.getUserId(),"",jwtConfig.expiration);
 
         //记录日志
         userLogService.saveUserLog(user);
@@ -135,7 +134,7 @@ public class UserServiceImpl implements UserService {
 
         String token = JwtUtil.getJwt(user.getUserId(), user.getUserRole().name(),
                 jwtConfig.secret, jwtConfig.expiration);
-        stringRedisTemplate.opsForValue().set(user.getUserId(),"",jwtConfig.expiration,TimeUnit.SECONDS);
+        userManager.setIntoCache(user.getUserId(),"",jwtConfig.expiration);
 
         //记录日志
         userLogService.saveUserLog(user);
@@ -146,7 +145,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void logout(String jwtId, String userId, Date jwtExpirationTime) {
         long expTime = Math.max(jwtExpirationTime.getTime()-System.currentTimeMillis(),0);
-        stringRedisTemplate.opsForValue().set(jwtId,"",expTime/1000, TimeUnit.SECONDS);
-        stringRedisTemplate.delete(userId);
+        userManager.setIntoCache(jwtId,"",expTime/1000);
+        userManager.deleteCache(userId);
     }
 }

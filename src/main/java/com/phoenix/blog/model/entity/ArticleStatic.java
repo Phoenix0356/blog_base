@@ -9,30 +9,27 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-
-import java.sql.Timestamp;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("article")
+@TableName("article_static")
 @Accessors(chain = true)
-public class Article{
+public class ArticleStatic {
 
-    @TableId(value = "article_id", type = IdType.ASSIGN_UUID)
+    @TableId(value = "articled_static_id", type = IdType.ASSIGN_UUID)
+    private String articleStaticId;
+
+    @TableField("article_read_count")
+    private int articleReadCount;
+
+    @TableField("article_upvote_count")
+    private int articleUpvoteCount;
+
+    @TableField("article_bookmark_count")
+    private int articleBookmarkCount;
+
+    @TableField("article_id")
     private String articleId;
-
-    @TableField("article_title")
-    private String articleTitle;
-
-    @TableField("article_content")
-    private String articleContent;
-
-    @TableField("article_revise_time")
-    private Timestamp articleReviseTime;
-
-    @TableField("article_user_id")
-    private String articleUserId;
 
 }

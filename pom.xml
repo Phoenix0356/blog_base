@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>com.phoenix</groupId>
-    <artifactId>blog</artifactId>
+    <artifactId>core</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>blog</name>
     <description>blog</description>

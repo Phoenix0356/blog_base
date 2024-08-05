@@ -1,6 +1,7 @@
 package com.phoenix.blog.model.vo;
 
 import com.phoenix.blog.model.entity.Article;
+import com.phoenix.blog.model.entity.ArticleStatic;
 import com.phoenix.blog.model.entity.User;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -22,15 +23,15 @@ public class ArticleVO {
     String collectionArticleNote;
 
 
-    public static ArticleVO buildVO(Article article, User user) {
+    public static ArticleVO buildVO(Article article, ArticleStatic articleStatic, User user) {
         return new ArticleVO()
                 .setArticleId(article.getArticleId())
                 .setArticleTitle(article.getArticleTitle())
                 .setArticleContent(article.getArticleContent())
                 .setArticleReviseTime(article.getArticleReviseTime().toString())
-                .setArticleReadCount(article.getArticleReadCount())
-                .setArticleUpvoteCount(article.getArticleUpvoteCount())
-                .setArticleBookmarkCount(article.getArticleBookmarkCount())
+                .setArticleReadCount(articleStatic.getArticleReadCount())
+                .setArticleUpvoteCount(articleStatic.getArticleUpvoteCount())
+                .setArticleBookmarkCount(articleStatic.getArticleBookmarkCount())
                 .setUsername(user.getUsername())
                 .setUserAvatarURL(user.getUserAvatarURL());
     }

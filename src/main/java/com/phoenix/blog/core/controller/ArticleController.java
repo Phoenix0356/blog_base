@@ -23,7 +23,7 @@ public class ArticleController {
     @GetMapping("/get/{articleId}")
     @AuthorizationRequired(Role.VISITOR)
     public ResultVO getArticleById(@PathVariable String articleId){
-        ArticleVO articleVO = articleService.getArticleVOById(articleId);
+        ArticleVO articleVO = articleService.getArticleDetailById(articleId);
         return ResultVO.success(RespMessageConstant.GET_SUCCESS, articleVO);
     }
 
@@ -45,7 +45,7 @@ public class ArticleController {
     @AuthorizationRequired(Role.WRITER)
     public ResultVO saveArticle(@RequestBody ArticleDTO articleDTO){
         articleDTO.setArticleUserId(TokenContext.getUserId());
-        ArticleVO articleVO = articleService.SaveArticleByUser(articleDTO);
+        ArticleVO articleVO = articleService.saveArticleByUser(articleDTO);
         return ResultVO.success(RespMessageConstant.SAVE_SUCCESS,articleVO);
     }
 

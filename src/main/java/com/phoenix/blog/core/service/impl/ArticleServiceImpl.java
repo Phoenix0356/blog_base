@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.phoenix.blog.constant.RespMessageConstant;
 import com.phoenix.blog.constant.SortConstant;
 import com.phoenix.blog.context.TokenContext;
-import com.phoenix.blog.core.manager.ArticleManager;
-import com.phoenix.blog.core.manager.ArticleTagManager;
-import com.phoenix.blog.core.manager.CommentManager;
-import com.phoenix.blog.core.manager.UserManager;
+import com.phoenix.blog.core.manager.*;
 import com.phoenix.blog.core.mapper.ArticleMapper;
 import com.phoenix.blog.core.service.ArticleService;
 import com.phoenix.blog.core.service.MessageService;
@@ -17,6 +14,7 @@ import com.phoenix.blog.model.dto.ArticleDTO;
 import com.phoenix.blog.model.entity.Article;
 import com.phoenix.blog.exceptions.clientException.ArticleFormatException;
 import com.phoenix.blog.exceptions.clientException.InvalidateArgumentException;
+import com.phoenix.blog.model.entity.ArticleStatic;
 import com.phoenix.blog.model.entity.User;
 import com.phoenix.blog.model.pojo.LinkedConcurrentMap;
 import com.phoenix.blog.model.vo.ArticleVO;
@@ -37,16 +35,18 @@ public class ArticleServiceImpl implements ArticleService{
     final MessageService messageService;
 
     final ArticleTagManager articleTagManager;
+    final ArticleStaticManager articleStaticManager;
     final UserManager userManager;
     final CommentManager commentManager;
     final ArticleManager articleManager;
     static final LinkedConcurrentMap<String,ReentrantLock> articleStaticsLockPool = new LinkedConcurrentMap<>();
 
     @Override
-    public ArticleVO getArticleVOById(String articleId) {
+    public ArticleVO getArticleDetailById(String articleId) {
         if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
 
         Article article;
+        ArticleStatic articleStatic;
         User user;
 
         ReentrantLock reentrantLock = articleStaticsLockPool.getIfAbsent(articleId, ReentrantLock.class);
@@ -56,17 +56,18 @@ public class ArticleServiceImpl implements ArticleService{
             article = articleManager.selectArticleInCache(articleId);
             user = userManager.select(article.getArticleUserId());
             //更新阅读量
-            article.setArticleReadCount(article.getArticleReadCount()+1);
-            articleMapper.updateById(article);
+            articleStatic = articleStaticManager.selectByArticleId(articleId);
+            articleStatic.setArticleReadCount(articleStatic.getArticleReadCount()+1);
+            articleStaticManager.update(articleStatic);
         }finally {
             reentrantLock.unlock();
         }
-        return ArticleVO.buildVO(article,user);
+        return ArticleVO.buildVO(article,articleStatic,user);
     }
 
     @Override
     public List<ArticleVO> getArticleAll(int sortStrategy) {
-        List<ArticleVO> articleVOList = articleMapper.selectArticleWithPublisherList();
+        List<ArticleVO> articleVOList = articleMapper.selectArticlePreviewList();
 
         switch (sortStrategy){
             case (SortConstant.SORT_BY_READ_COUNT):
@@ -88,26 +89,28 @@ public class ArticleServiceImpl implements ArticleService{
     }
 
     @Override
-    public ArticleVO SaveArticleByUser(ArticleDTO articleDTO) {
-        Article article = new Article();
-
-        article.setArticleUserId(articleDTO.getArticleUserId())
-        .setArticleTitle(articleDTO.getArticleTitle())
-        .setArticleContent(articleDTO.getArticleContent())
-        .setArticleReviseTime(new Timestamp(System.currentTimeMillis()));
-
+    public ArticleVO saveArticleByUser(ArticleDTO articleDTO) {
         if (DataUtil.isEmptyData(articleDTO.getArticleTitle())){
             throw new ArticleFormatException(RespMessageConstant.ARTICLE_TITLE_EMPTY_ERROR);
         }
-
         if (DataUtil.isEmptyData(articleDTO.getArticleContent())){
             throw new ArticleFormatException(RespMessageConstant.ARTICLE_CONTENT_EMPTY_ERROR);
         }
 
+        Article article = new Article();
+        article.setArticleUserId(articleDTO.getArticleUserId())
+        .setArticleTitle(articleDTO.getArticleTitle())
+        .setArticleContent(articleDTO.getArticleContent())
+        .setArticleReviseTime(new Timestamp(System.currentTimeMillis()));
         articleMapper.insert(article);
 
+        ArticleStatic articleStatic = new ArticleStatic();
+        articleStatic.setArticleId(article.getArticleId())
+                .setArticleReadCount(0)
+                .setArticleUpvoteCount(0)
+                .setArticleBookmarkCount(0);
         User user = userManager.select(article.getArticleUserId());
-        return ArticleVO.buildVO(article,user);
+        return ArticleVO.buildVO(article,articleStatic,user);
     }
 
     @Override
@@ -140,32 +143,31 @@ public class ArticleServiceImpl implements ArticleService{
 
             if (DataUtil.isEmptyData(articleId)) throw new InvalidateArgumentException();
 
-            Article article = articleMapper.selectById(articleId);
-            if (article == null) throw new NotFoundException(RespMessageConstant.ARTICLE_NOT_FOUND_ERROR);
+            ArticleStatic articleStatic = articleStaticManager.selectByArticleId(articleId);
 
-            int newUpvoteCount = article.getArticleUpvoteCount()+articleDTO.getArticleUpvoteCountChange();
-            int newBookmarkCount = article.getArticleBookmarkCount()+articleDTO.getArticleBookmarkCountChange();
+            int newUpvoteCount = articleStatic.getArticleUpvoteCount()+articleDTO.getArticleUpvoteCountChange();
+            int newBookmarkCount = articleStatic.getArticleBookmarkCount()+articleDTO.getArticleBookmarkCountChange();
             int messageType = articleDTO.getArticleMessageType();
 
             //判断是否被点赞
             if (DataUtil.isOptionChosen(messageType, MessageType.UPVOTE.getTypeNum())){
-                article.setArticleUpvoteCount(newUpvoteCount);
+                articleStatic.setArticleUpvoteCount(newUpvoteCount);
                 messageService.saveMessage(articleId,MessageType.UPVOTE,TokenContext.getUserId());
             }
 
             //判断是否被收藏
             if (DataUtil.isOptionChosen(messageType, MessageType.BOOKMARK.getTypeNum())){
-                article.setArticleBookmarkCount(newBookmarkCount);
+                articleStatic.setArticleBookmarkCount(newBookmarkCount);
                 messageService.saveMessage(articleId,MessageType.BOOKMARK,TokenContext.getUserId());
             }
 
             //判断是否被取消收藏
             if (DataUtil.isOptionChosen(messageType, MessageType.BOOKMARK_CANCEL.getTypeNum())){
-                article.setArticleBookmarkCount(newBookmarkCount);
+                articleStatic.setArticleBookmarkCount(newBookmarkCount);
                 messageService.saveMessage(articleId,MessageType.BOOKMARK_CANCEL,TokenContext.getUserId());
             }
 
-            articleMapper.updateById(article);
+            articleStaticManager.update(articleStatic);
         }finally{
             reentrantLock.unlock();
         }
@@ -173,18 +175,12 @@ public class ArticleServiceImpl implements ArticleService{
 
     @Override
     public void deleteArticleBookmarkCount(String articleId) {
-        ReentrantLock reentrantLock;
-        try {
-            reentrantLock = articleStaticsLockPool.getIfAbsent(articleId, ReentrantLock.class);
-        }catch (Exception e){
-            //TODO:记录日志
-            return;
-        }
+        ReentrantLock reentrantLock = articleStaticsLockPool.getIfAbsent(articleId, ReentrantLock.class);
         reentrantLock.lock();
         try {
-            Article article = articleMapper.selectById(articleId);
-            article.setArticleBookmarkCount(article.getArticleBookmarkCount()-1);
-            articleMapper.updateById(article);
+            ArticleStatic articleStatic = articleStaticManager.selectByArticleId(articleId);
+            articleStatic.setArticleBookmarkCount(articleStatic.getArticleBookmarkCount()-1);
+            articleStaticManager.update(articleStatic);
             messageService.saveMessage(articleId, MessageType.BOOKMARK_CANCEL,TokenContext.getUserId());
         }finally {
             reentrantLock.unlock();
